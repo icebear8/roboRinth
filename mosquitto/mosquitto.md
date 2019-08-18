@@ -32,3 +32,11 @@ Docker images for the Raspberry Pi are tagged with `-arm`.
 As an alternative to RancherOS, [BalenaOS](https://www.balena.io/os/) can be used instead.
 BalenaOS comes with an additional framework to manage and deploy Docker containers.
 Use the BalenaOS development version with the user `root` and SSH on port 22222 which is open and unsecured.
+
+### Raspbian and Docker
+To use Docker on Raspbian an install script is available under `https://get.docker.com`.
+**Before executing the script it must be carefully reviewed, since it is executed with root access.**
+
+Instructions
+* https://blog.docker.com/2019/03/happy-pi-day-docker-raspberry-pi/
+* or https://howchoo.com/g/nmrlzmq1ymn/how-to-install-docker-on-your-raspberry-pi
