@@ -67,7 +67,7 @@ Ein Script soll nach dem Linux Bootvorgang eine "Hello World" Applikation starte
 Eine Python oder Java Applikation kann auf dem Host entwickelt werden und anschliessend z.B. mittels WinSCP aufs target deployed werden.
 Für eine C/C++ Anwendung gibt es zur Zeit keine Cross-Compilation Toolchain. Man müsste in diesem Fall auf dem Target kompilieren.
 
-#FAQ
+# FAQ
 - Ich komme mit SSH nicht auf den Roboter drauf, was tun?
   - Womöglich hat die IP-Adress-Reservierung nicht funktioniert und der Roboter hat eine andere IP Adresse bekommen als erwartet. 
     - Auf dem Display des EV3 wird die IP-Adresse angezeigt, insofern eine Verbindung besteht
