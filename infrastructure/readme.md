@@ -2,7 +2,7 @@
 
 ## Inbetriebnahme
 Router, Roboter (und Raspberry Pi Server?) sind vorkonfiguriert. Es muss also nur alles richtig eingesteckt werden und nach Power-On läuft das Netzwerk. 
-Für Internetzugriff muss zusätzlich noch z.B. ein Mobile Router angehängt werden werden.
+Für Internetzugriff muss zusätzlich noch z.B. ein Mobile Router angehängt werden.
 
 ## Netzwerk
 <img src="RoboRinth Network.png" width="1000" >
@@ -72,7 +72,7 @@ Für eine C/C++ Anwendung gibt es zur Zeit keine Cross-Compilation Toolchain. Ma
   - Womöglich hat die IP-Adress-Reservierung nicht funktioniert und der Roboter hat eine andere IP Adresse bekommen als erwartet. 
     - Auf dem Display des EV3 wird die IP-Adresse angezeigt, insofern eine Verbindung besteht
     - Zudem kann man auf dem Router nachschauen welche Devices verbunden sind und welche IP Adressen sie haben: [http://192.168.0.1/admin_activeDhcpClient.asp](http://192.168.0.1/admin_activeDhcpClient.asp)
-  - SSH Zugriff funktioniert NUR innerhalb des RoboRinth LAN/WLAN befinden
+  - SSH Zugriff funktioniert NUR innerhalb des RoboRinth LAN/WLAN
 - ev3dev OS zerschossen, was tun?
   - **tbd** vorkonfiguriertes image auf sd karte kopieren
 - RoboRinth Router funktioniert nicht, was tun?
