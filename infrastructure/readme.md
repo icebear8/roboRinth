@@ -2,7 +2,7 @@
 
 ## Inbetriebnahme
 Router, Roboter (und Raspberry Pi Server?) sind vorkonfiguriert. Es muss also nur alles richtig eingesteckt werden und nach Power-On läuft das Netzwerk. 
-Für Internetzugriff muss zusätzlich noch z.B. ein Mobile Router angehängt werden.
+Für Internetzugriff muss zusätzlich noch z.B. ein Mobile Router angehängt werden. Der WAN Port am RoboRInth Router ist vorkonfiguriert, der Gateway Port muss die IP Adresse 192.168.1.1 bekommen (siehe unten).
 
 ## Netzwerk
 <img src="RoboRinth Network.png" width="1000" >
@@ -26,23 +26,28 @@ Die EV3 Roboter haben kein eingebautes WLAN. Es kann aber ein USB WLAN Dongle ei
 Folgender WLAN-Dongle wurde getestet und hat sich als zuverlässig erwiesen: [Edimax ew-7612uan_v2](https://www.edimax.com/edimax/merchandise/merchandise_detail/data/edimax/in/wireless_adapters_n300/ew-7612uan_v2/)
 
 ## Roboter 1
-- Aus Lego Mindstorms EV3 Kit
+- Aus Lego Mindstorms EV3 Kit **Bern**
 - Beschriftet mit **ROBO-01**
 - **Achtung:** WLAN-Dongle mit Kleber **ANT-01** vor Power-On einstecken 
 - **Achtung:** vorkonfigurierte SD-Karte nicht entfernen
 - MAC Adresse: **08:be:ac:02:e4:25** (08beac02e425)
 - IP Adresse: **192.168.0.201** (static DHCP lease)
 
-## tbd Roboter 2
-- Aus Lego Mindstorms EV3 Kit
-- **tbd** Kleber **ROBO-02**
-- **tbd** Zweiten WLAN Dongle besorgen
+## Roboter 2
+- Aus Lego Mindstorms EV3 Kit **Bern**
+- Beschriftet mit **ROBO-02**
 - **Achtung:** WLAN-Dongle mit Kleber **ANT-02** vor Power-On einstecken
 - **Achtung:** vorkonfigurierte SD-Karte nicht entfernen
-- **tbd** MAC Adresse 
-- IP Adresse: **192.168.0.202** (**tbd** static DHCP lease)
+- MAC Adresse: **08:be:ac:05:cd:f4** (08beac05cdf4)
+- IP Adresse: **192.168.0.202** (static DHCP lease)
 
-## tbd Roboter 3 ?
+## Roboter 3
+- Aus Lego Mindstorms EV3 Kit **Schlieren**
+- Beschriftet mit **ROBO-03**
+- **Achtung:** WLAN-Dongle mit Kleber **ANT-03** vor Power-On einstecken
+- **Achtung:** vorkonfigurierte SD-Karte nicht entfernen
+- MAC Adresse: **08:be:ac:05:cd:f3** (08beac05cdf3)
+- IP Adresse: **192.168.0.203** (static DHCP lease)
 
 # ev3dev
 The Linux OS running on the EV3 robots. [https://www.ev3dev.org/](https://www.ev3dev.org/)
