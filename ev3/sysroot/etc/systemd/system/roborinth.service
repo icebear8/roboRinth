@@ -1,0 +1,14 @@
+[Unit]
+Description=RoboRinth
+Before=display-manager.service
+
+[Service]
+Type=simple
+ExecStart=/opt/roborinth/roborinth.sh
+StandardInput=tty
+TTYPath=/dev/tty1
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
