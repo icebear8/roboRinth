@@ -15,7 +15,7 @@ def main():
 
 	ui = SimpleUi(config['robot'])
 	mqtt = SimpleMqtt(config['mqtt'], config['robot']['id'])
-	io = SimpleIO(config['io'])
+	io = SimpleIO()
 
 	
 	# SimpleMqtt
@@ -24,7 +24,7 @@ def main():
 		ui.setStatusText(status)
 		if status == 'Connected':
 			ui.setStatusLed('green')
-			ui.playStartSound()
+			#ui.playStartSound()
 		else:
 			ui.setStatusLed('orange')
 
@@ -179,7 +179,7 @@ def main():
 
 	ui.registerBackspaceHandler(handleBackspacePressed)
 	ui.start()
-	ui.setPowerSupplyText(str(round(io.readVoltageUV()/1000000,1)) + ' V / ' + str(int(round(io.readCurrentUA()/1000,0))) + ' mA') 
+	ui.setPowerSupplyText(str(io.readVoltageV()) + ' V / ' + str(int(io.readCurrentMA())) + ' mA') 
 
 	mqtt.setStatusChangedCallback(statusChangedCallback)
 	mqtt.registerMessageHandler('ctrl', handleControlMessage)

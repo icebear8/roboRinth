@@ -8,15 +8,5 @@
 	{
 		"host" : "192.168.0.102",
 		"port" : 1883
-	},
-
-	"io" :
-	{
-		"MoveSteering"		: ["outA", "outB"],
-		"MediumMotor"		: "outC",
-		"TouchSensor"		: "in1",
-		"ColorSensor"		: "in2",
-		"UltrasonicSensor"	: "in3",
-		"GyroSensor"		: "in4"	
 	}
 }

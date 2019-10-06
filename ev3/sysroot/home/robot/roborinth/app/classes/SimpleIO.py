@@ -20,48 +20,116 @@ from ev3dev2 import DeviceNotFound
 
 class SimpleIO(threading.Thread):
 
-	def __init__(self, config):
+	def __init__(self):
 		threading.Thread.__init__(self)
 		self.threadID = 1
 		self.name = 'io-thread'
 		self.isRunning = True
 		try:
-			self.touchSensor = TouchSensor(config['TouchSensor'])
+			touchSensorInputs = self.findTouchSensors()
+			if len(touchSensorInputs) == 0:
+				raise DeviceNotFound('No TouchSensors found')
+			self.touchSensor = TouchSensor(touchSensorInputs[0])
 		except DeviceNotFound as err:
 			self.touchSensor = None
 			print(str(err)) 
 
 		try:
-			self.colorSensor = ColorSensor(config['ColorSensor'])
+			colorSensorInputs = self.findColorSensors()
+			if len(colorSensorInputs) == 0:
+				raise DeviceNotFound('No ColorSensors found')
+			self.colorSensor = ColorSensor(colorSensorInputs[0])
 		except DeviceNotFound as err:
 			self.colorSensor = None
 			print(str(err)) 
 
 		try:
-			self.ultrasonicSensor = UltrasonicSensor(config['UltrasonicSensor'])
+			ultrasonicSensorInputs = self.findUltrasonicSensors()
+			if len(ultrasonicSensorInputs) == 0:
+				raise DeviceNotFound('No UltrasonicSensors found')
+			self.ultrasonicSensor = UltrasonicSensor(ultrasonicSensorInputs[0])
 		except DeviceNotFound as err:
 			self.ultrasonicSensor = None
 			print(str(err)) 
 
 		try:
-			self.gyroSensor = GyroSensor(config['GyroSensor'])
+			gyroSensorInputs = self.findGyroSensors()
+			if len(gyroSensorInputs) == 0:
+				raise DeviceNotFound('No GyroSensors found')
+			self.gyroSensor = GyroSensor(gyroSensorInputs[0])
 		except DeviceNotFound as err:
 			self.gyroSensor = None
 			print(str(err)) 
 
 		try:
-			self.mediumMotor = MediumMotor(config['MediumMotor'])
+			mediumMotorInputs = self.findMediumMotors()
+			if len(mediumMotorInputs) == 0:
+				raise DeviceNotFound('No MediumMotors found')
+			self.mediumMotor = MediumMotor(mediumMotorInputs[0])
 		except DeviceNotFound as err:
 			self.mediumMotor = None
 			print(str(err)) 
 
 		try:
-			self.moveSteering = MoveSteering(config['MoveSteering'][0], config['MoveSteering'][1])
+			largeMotorInputs = self.findLargeMotors()
+			if len(largeMotorInputs) < 2:
+				raise DeviceNotFound('Too few LargeMotors found')
+			self.moveSteering = MoveSteering(largeMotorInputs[0], largeMotorInputs[1])
 		except DeviceNotFound as err:
 			self.moveSteering = None
 			print(str(err)) 
 
 		self.powerSupply = PowerSupply()
+
+		self.readAll()
+		self.resetMediumMotorPosition()
+		self.resetMoveSteering()
+		self.resetGyroSensor()
+		sleep(3) # make sure reset calls from before have an effect
+		self.readAll()
+		
+
+	def findDevices(self, driverName, ioNames, list_method):
+		findings = []
+		for io in ioNames:
+			result = list_method('*', driver_name=driverName, address=io)
+			found = bool(sum(1 for r in result))
+			if found:
+				findings.append(io)
+				print('found device with driver name ' + driverName + ' on io ' + io)
+		return findings
+	
+	def findSensors(self, driverName):
+		ios = ['in1', 'in2', 'in3', 'in4']
+		return self.findDevices(driverName, ios, list_sensors)
+
+	def findTouchSensors(self):
+		driverName = 'lego-ev3-touch'
+		return self.findSensors(driverName)
+
+	def findColorSensors(self):
+		driverName = 'lego-ev3-color'
+		return self.findSensors(driverName)
+
+	def findUltrasonicSensors(self):
+		driverName = 'lego-ev3-us'
+		return self.findSensors(driverName)
+
+	def findGyroSensors(self):
+		driverName = 'lego-ev3-gyro'
+		return self.findSensors(driverName)
+
+	def findMotors(self, driverName):
+		ios = ['outA', 'outB', 'outC', 'outD']
+		return self.findDevices(driverName, ios, list_motors)
+
+	def findMediumMotors(self):
+		driverName = 'lego-ev3-m-motor'
+		return self.findMotors(driverName)
+
+	def findLargeMotors(self):
+		driverName = 'lego-ev3-l-motor'
+		return self.findMotors(driverName)
 
 
 	#TouchSensor
@@ -85,35 +153,35 @@ class SimpleIO(threading.Thread):
 	def readReflectedLightIntensity(self):
 		try:
 			return self.colorSensor.reflected_light_intensity
-		except (ValueError, AttributeError, DeviceNotFound) as e:
+		except (OSError, ValueError, AttributeError, DeviceNotFound) as e:
 			self.colorSensor = None
 		return 0
 
 	def readAmbientLightIntensity(self):
 		try:
 			return self.colorSensor.ambient_light_intensity
-		except (AttributeError, DeviceNotFound) as e:
+		except (OSError, ValueError, AttributeError, DeviceNotFound) as e:
 			self.colorSensor = None
 		return 0		
 
 	def readColor(self):
 		try:
 			return self.colorSensor.color
-		except (AttributeError, DeviceNotFound) as e:
+		except (OSError, AttributeError, DeviceNotFound) as e:
 			self.colorSensor = None
 		return 0
 
 	def readColorName(self):
 		try:
 			return self.colorSensor.color_name
-		except (AttributeError, DeviceNotFound) as e:
+		except (OSError, AttributeError, DeviceNotFound) as e:
 			self.colorSensor = None
 		return 'NoColor'
 
 	def readColorRaw(self):
 		try:
 			return self.colorSensor.raw
-		except (AttributeError, DeviceNotFound) as e:
+		except (OSError, AttributeError, DeviceNotFound) as e:
 			self.colorSensor = None
 		return 0, 0, 0
 
@@ -138,7 +206,8 @@ class SimpleIO(threading.Thread):
 
 	def resetGyroSensor(self):
 		try:
-			self.gyroSensor.reset()
+			#self.gyroSensor.reset()
+			self.gyroSensor._direct = self.gyroSensor.set_attr_raw(self.gyroSensor._direct, 'direct', bytes(17,))
 		except (AttributeError, DeviceNotFound) as e:
 			self.gyroSensor = None
 
@@ -164,10 +233,8 @@ class SimpleIO(threading.Thread):
 
 	def resetMediumMotorPosition(self):
 		try:
-			print('before, motor pos ' + str(self.mediumMotor.position)) 
 			self.mediumMotor.on(0, brake=False)
 			self.mediumMotor.position = 0
-			print('after, motor pos ' + str(self.mediumMotor.position))
 		except (AttributeError, DeviceNotFound) as e:
 			self.mediumMotor = None
 
@@ -209,14 +276,13 @@ class SimpleIO(threading.Thread):
 			self.moveSteering = None
 
 
-
 	#PowerSupply
 
-	def readCurrentUA(self):
-		return self.powerSupply.measured_current
+	def readCurrentMA(self):
+		return round(self.powerSupply.measured_current / 1000, 1)
 
-	def readVoltageUV(self):
-		return self.powerSupply.measured_voltage
+	def readVoltageV(self):
+		return round(self.powerSupply.measured_voltage / 1000000, 1)
 
 	#others
 
@@ -230,7 +296,9 @@ class SimpleIO(threading.Thread):
 			str(self.readColorRaw()) + '\t' +
 			str(self.readDistanceCentimeter()) + '\t' +
 			str(self.readGyroAngle()) + '\t' +
-			str(self.readMediumMotorPosition())
+			str(self.readMediumMotorPosition()) + '\t' +
+			str(self.readCurrentMA()) + '\t' +
+			str(self.readVoltageV())
 		)
 
 	def run(self):
