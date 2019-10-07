@@ -17,9 +17,7 @@ def main():
 	mqtt = SimpleMqtt(config['mqtt'], config['robot']['id'])
 	io = SimpleIO()
 
-	
 	# SimpleMqtt
-
 	def statusChangedCallback(status):
 		ui.setStatusText(status)
 		if status == 'Connected':
@@ -28,9 +26,7 @@ def main():
 		else:
 			ui.setStatusLed('orange')
 
-
 	# General Messages
-
 	def handleControlMessage(topic, payload):
 		print('handle control message: ' + payload)
 		if payload == 'Q':
@@ -41,9 +37,7 @@ def main():
 		print('handle text: ' + payload)
 		ui.setMessageText(payload)
 
-
 	# TouchSensor
-
 	def returnTouchSensorPresent(topic, payload):
 		val = io.touchSensorPresent()
 		print('publish response TouchSensor present: ' + str(val))
@@ -54,9 +48,7 @@ def main():
 		print('publish response TouchSensor pressed: ' + str(val))
 		mqtt.publishResponse(topic, str(val))
 
-
 	# ColorSensor
-
 	def returnColorSensorPresent(topic, payload):
 		val = io.colorSensorPresent()
 		print('publish response ColorSensor present: ' + str(val))
@@ -87,9 +79,7 @@ def main():
 		print('publish response ColorSensor color: ' + str(val))
 		mqtt.publishResponse(topic, str(val))
 
-
 	# UltrasonicSensor
-
 	def returnUltrasonicSensorPresent(topic, payload):
 		val = io.ultrasonicSensorPresent()
 		print('publish response UltrasonicSensor present: ' + str(val))
@@ -100,9 +90,7 @@ def main():
 		print('publish response UltrasonicSensor distance centimeter: ' + str(val))
 		mqtt.publishResponse(topic, str(val))
 
-
 	# GyroSensor
-
 	def returnGyroSensorPresent(topic, payload):
 		val = io.gyroSensorPresent()
 		print('publish response GyroSensor present: ' + str(val))
@@ -117,9 +105,7 @@ def main():
 		print('publish response GyroSensor angle: ' + str(val))
 		mqtt.publishResponse(topic, str(val))
 
-
 	# MediumMotor
-
 	def returnMediumMotorPresent(topic, payload):
 		val = io.mediumMotorPresent()
 		print('publish response MediumMotor present: ' + str(val))
@@ -143,10 +129,8 @@ def main():
 		val = float(payload)
 		print('activate MediumMotor with duty cycle: ' + str(val))
 		io.activateMediumMotor(val)
-	
 
 	# MoveSteering
-
 	def returnMoveSteeringPresent(topic, payload):
 		val = io.moveSteeringPresent()
 		print('publish response MoveSteering present: ' + str(val))
@@ -168,18 +152,62 @@ def main():
 		print('turn MoveSteering by angle: ' + str(val))
 		io.turnMoveSteeringByAngle(val)
 
-	# UI
+	# notifications
+	def notifyDeviceState(data):
+		print('notify device state')
+		print(str(data))
+		mqtt.publishUnderRootTopic('deviceState/notification', json.dumps(data))
+	io.registerNotificationCallback('deviceState', notifyDeviceState)
 
+	def notifyTouchPressend(pressed):
+		print('notify touch pressed')
+		print(str(pressed))
+		mqtt.publishUnderRootTopic('touch/notification', str(pressed))
+	io.registerNotificationCallback('touch', notifyTouchPressend)
+
+	def notifyColorChanged(data):
+		print('notify color')
+		print(str(data))
+		mqtt.publishUnderRootTopic('color/notification', json.dumps(data))
+	io.registerNotificationCallback('color', notifyColorChanged)
+
+	def notifyDistanceChanged(centimeter):
+		print('notify distance')
+		print(str(centimeter))
+		mqtt.publishUnderRootTopic('ultrasonic/notification', str(centimeter))
+	io.registerNotificationCallback('ultrasonic', notifyDistanceChanged)
+
+	def notifyGyroAngleChanged(angle):
+		print('notify gyro angle')
+		print(str(angle))
+		mqtt.publishUnderRootTopic('gyro/notification', str(angle))
+	io.registerNotificationCallback('gyro', notifyGyroAngleChanged)
+
+	def notifyMediumMotorPosition(position):
+		print('notify medium motor position')
+		print(str(position))
+		mqtt.publishUnderRootTopic('motor/notification', str(position))
+	io.registerNotificationCallback('mediumMotor', notifyMediumMotorPosition)
+
+	def notifyPowerSupply(data):
+		print('notify power supply')
+		print(str(data))
+		ui.setPowerSupplyText(str(data['voltageV']) + ' V / ' + str(data['currentMA']) + ' mA')
+		mqtt.publishUnderRootTopic('power', notifyPowerSupply)
+	io.registerNotificationCallback('power', notifyPowerSupply)
+
+	# UI
 	def handleBackspacePressed(isPressed):
 		if isPressed:
 			print('backspace pressed')
 			print('disconnect')
 			mqtt.exit()
 
-
 	ui.registerBackspaceHandler(handleBackspacePressed)
 	ui.start()
-	ui.setPowerSupplyText(str(io.readVoltageV()) + ' V / ' + str(int(io.readCurrentMA())) + ' mA') 
+	ui.setPowerSupplyText(str(io.readVoltageV()) + ' V / ' + str(int(io.readCurrentMA())) + ' mA')
+
+	io.start()
 
 	mqtt.setStatusChangedCallback(statusChangedCallback)
 	mqtt.registerMessageHandler('ctrl', handleControlMessage)
