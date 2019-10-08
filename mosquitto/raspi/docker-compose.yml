@@ -1,0 +1,19 @@
+version: '3'
+services:
+  mosquitto:
+    image: icebear8/mosquitto:latest-arm
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+    env_file:
+      - ./config/mosquitto.env
+  nodered:
+    image: icebear8/nodered:latest-arm
+    container_name: nodered
+    ports:
+      - "1880:1880"
+  tinkerforge:
+    image: icebear8/tinkerforge:latest-arm
+    container_name: tinkerforge
+    env_file:
+      - ./config/tinkerforge.env
