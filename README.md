@@ -6,14 +6,14 @@ The goal is to examine a labyrinth of lines with multiple (2-3) robots, find an 
 
 ### Setup
 - 2-3 Lego Mindstorm robots
-    - They come with [preinstalled MQTT client application](ev3/readme.md), which may or may not be reused.
+    - They come with [preinstalled MQTT client application](ev3/readme.md)
     - Actors (motors)
     - Sensors (brightness sensor, gyroscope, …)
     - ev3dev OS to run any code on the robot
     - MQTT client
     - WiFi dongle to communicate with server
 - Raspberry Pi / PC as server
-    - MQTT broker
+    - preconfigured as MQTT broker. [Details here](mosquitto/readme.md)
 - Raspberry Pi's / PC's as MQTT clients
 
 The network infrastructure is preconfigured. [Have a look at the details](infrastructure/readme.md)
