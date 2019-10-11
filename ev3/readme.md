@@ -22,7 +22,7 @@ D.h. Der Roboter mit der ID `robo-01` sendet und empfängt nur Nachrichten unter
 
 Über MQTT können folgende Typen von Nachrichten gesendet werden:
  - Clients können **requests** publishen, welche vom Roboter ausgeführt werden, das Resultat wird als **response** gepublished
- - Clients können mit **subscribe** und **unsubscribe** Nachrichten Notifikationen aktivieren
+ - Clients können mit **subscribe** und **unsubscribe**  Notifikationen aktivieren/deaktivieren
  - **notification** Nachrichten werden mit einer einstellbaren Periode vom Roboter gepublished
 
 Die Notifikationsperiode beträgt standarmässig 1 Sekunde.
