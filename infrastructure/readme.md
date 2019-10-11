@@ -71,8 +71,6 @@ See [ev3 preconfiguration](../ev3/readme.md)
     - Auf dem Display des EV3 wird die IP-Adresse angezeigt, insofern eine Verbindung besteht
     - Zudem kann man auf dem Router nachschauen welche Devices verbunden sind und welche IP Adressen sie haben: [http://192.168.0.1/admin_activeDhcpClient.asp](http://192.168.0.1/admin_activeDhcpClient.asp)
   - SSH Zugriff funktioniert NUR innerhalb des RoboRinth LAN/WLAN
-- ev3dev OS zerschossen, was tun?
-  - **tbd** vorkonfiguriertes image auf sd karte kopieren
 - RoboRinth Router funktioniert nicht, was tun?
   - Falls eine Verbindung aufs Webinterface noch möglich ist
     - Es gibt einen System Log
