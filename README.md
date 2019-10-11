@@ -6,6 +6,7 @@ The goal is to examine a labyrinth of lines with multiple (2-3) robots, find an 
 
 ### Setup
 - 2-3 Lego Mindstorm robots
+    - They come with [preinstalled MQTT client application](ev3/readme.md), which may or may not be reused.
     - Actors (motors)
     - Sensors (brightness sensor, gyroscope, …)
     - ev3dev OS to run any code on the robot
@@ -15,7 +16,7 @@ The goal is to examine a labyrinth of lines with multiple (2-3) robots, find an 
     - MQTT broker
 - Raspberry Pi's / PC's as MQTT clients
 
-_The setup will be prepared before the camp and provided at camp start._
+The network infrastructure is preconfigured. [Have a look at the details](infrastructure/readme.md)
 
 <img src="roboRinth_Project_Setup.png" alt="Setup" width="400"/>
 
