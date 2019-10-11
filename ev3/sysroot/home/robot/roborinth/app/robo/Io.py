@@ -19,7 +19,7 @@ from ev3dev2.power import PowerSupply
 from ev3dev2 import DeviceNotFound
 
 
-class SimpleIO(threading.Thread):
+class Io(threading.Thread):
 
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -27,32 +27,16 @@ class SimpleIO(threading.Thread):
 		self.name = 'io-thread'
 		self.isRunning = True
 		self.notificationCallbacks = dict()
-		self.touchPresent = True
-		self.touchPressed = False
-		self.colorPresent = True
-		self.color = 0
-		self.colorName = 'NoColor'
-		self.colorRaw = (0, 0, 0)
-		self.reflectedLightIntensity = 0.0
-		self.ambientLightIntensity = 0.0
-		self.ultrasonicPresent = True
-		self.ultrasonicDistanceCentimeter = 0.0
-		self.gyroPresent = True
-		self.gyroAngle = 0
-		self.mediumMotorPresent = True
-		self.mediumMotorPosition = 0
-		self.moveSteeringPresent = True
-		self.voltageV = 0.0
-		self.currentMA = 0.0
+		self.period = 1
 
-		try:
+		'''try:
 			touchSensorInputs = self.findTouchSensors()
 			if len(touchSensorInputs) == 0:
 				raise DeviceNotFound('No TouchSensors found')
 			self.touchSensor = TouchSensor(touchSensorInputs[0])
-		except DeviceNotFound as err:
-			self.touchSensor = None
-			print(str(err))
+		except DeviceNotFound as err:'''
+		self.touchSensor = None
+		# print(str(err))
 
 		try:
 			colorSensorInputs = self.findColorSensors()
@@ -63,14 +47,14 @@ class SimpleIO(threading.Thread):
 			self.colorSensor = None
 			print(str(err))
 
-		try:
+		'''try:
 			ultrasonicSensorInputs = self.findUltrasonicSensors()
 			if len(ultrasonicSensorInputs) == 0:
 				raise DeviceNotFound('No UltrasonicSensors found')
 			self.ultrasonicSensor = UltrasonicSensor(ultrasonicSensorInputs[0])
-		except DeviceNotFound as err:
-			self.ultrasonicSensor = None
-			print(str(err))
+		except DeviceNotFound as err:'''
+		self.ultrasonicSensor = None
+		# print(str(err))
 
 		try:
 			gyroSensorInputs = self.findGyroSensors()
@@ -81,14 +65,15 @@ class SimpleIO(threading.Thread):
 			self.gyroSensor = None
 			print(str(err))
 
-		try:
+
+		'''try:
 			mediumMotorInputs = self.findMediumMotors()
 			if len(mediumMotorInputs) == 0:
 				raise DeviceNotFound('No MediumMotors found')
 			self.mediumMotor = MediumMotor(mediumMotorInputs[0])
-		except DeviceNotFound as err:
-			self.mediumMotor = None
-			print(str(err))
+		except DeviceNotFound as err:'''
+		self.mediumMotor = None
+		# print(str(err))
 
 		try:
 			largeMotorInputs = self.findLargeMotors()
@@ -101,12 +86,16 @@ class SimpleIO(threading.Thread):
 
 		self.powerSupply = PowerSupply()
 
-		self.readAll()
-		self.resetMediumMotorPosition()
+		# observed many times application freezes when executing the following lines
+		# introduced sleeps as workaround. hopefully this gives the drivers enough time to reset and prevent freeze
+		print('reset sensors...')
+		sleep(3)
+		# self.resetMediumMotorPosition()
 		self.resetMoveSteering()
+		sleep(1)
 		self.resetGyroSensor()
-		sleep(3)  # make sure reset calls from before have an effect
-		self.readAll()
+		sleep(3)
+		print('Done.')
 
 	def findDevices(self, driverName, ioNames, list_method):
 		findings = []
@@ -157,9 +146,13 @@ class SimpleIO(threading.Thread):
 
 	def readTouchSensorPressed(self):
 		try:
-			return (self.touchSensor.is_pressed == 1)
-		except (AttributeError, DeviceNotFound) as e:
+			return self.touchSensor.is_pressed == 1
+		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable TouchSensor!')
 			self.touchSensor = None
+		except ValueError as e:
+			print(str(e))
 		return False
 
 	# ColorSensor
@@ -170,36 +163,56 @@ class SimpleIO(threading.Thread):
 	def readReflectedLightIntensity(self):
 		try:
 			return self.colorSensor.reflected_light_intensity
-		except (OSError, ValueError, AttributeError, DeviceNotFound) as e:
+		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable  ColorSensor!')
 			self.colorSensor = None
+		except ValueError as e:
+			print(str(e))
 		return 0
 
 	def readAmbientLightIntensity(self):
 		try:
 			return self.colorSensor.ambient_light_intensity
-		except (OSError, ValueError, AttributeError, DeviceNotFound) as e:
+		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable ColorSensor')
 			self.colorSensor = None
+		except ValueError as e:
+			print(str(e))
 		return 0
 
 	def readColor(self):
 		try:
 			return self.colorSensor.color
 		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable ColorSensor')
 			self.colorSensor = None
+		except ValueError as e:
+			print(str(e))
 		return 0
 
 	def readColorName(self):
 		try:
 			return self.colorSensor.color_name
 		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable ColorSensor')
 			self.colorSensor = None
+		except ValueError as e:
+			print(str(e))
 		return 'NoColor'
 
 	def readColorRaw(self):
 		try:
 			return self.colorSensor.raw
 		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable  ColorSensor')
 			self.colorSensor = None
+		except ValueError as e:
+			print(str(e))
 		return 0, 0, 0
 
 	# UltrasonicSensor
@@ -211,7 +224,11 @@ class SimpleIO(threading.Thread):
 		try:
 			return round(self.ultrasonicSensor.distance_centimeters_continuous, 1)
 		except (AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable UltrasonicSensor')
 			self.ultrasonicSensor = None
+		except ValueError as e:
+			print(str(e))
 		return 0.0
 
 	# GyroSensor
@@ -221,16 +238,26 @@ class SimpleIO(threading.Thread):
 
 	def resetGyroSensor(self):
 		try:
-			# self.gyroSensor.reset()
+			# self.gyroSensor.reset() --> this official api method does not works
 			self.gyroSensor._direct = self.gyroSensor.set_attr_raw(self.gyroSensor._direct, 'direct', bytes(17, ))
-		except (AttributeError, DeviceNotFound) as e:
+			return True
+		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable GyroSensor')
 			self.gyroSensor = None
+		except ValueError as e:
+			print(str(e))
+		return False
 
 	def readGyroAngle(self):
 		try:
 			return self.gyroSensor.angle
-		except (AttributeError, DeviceNotFound) as e:
+		except (OSError, AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable GyroSensor')
 			self.gyroSensor = None
+		except ValueError as e:
+			print(str(e))
 		return 0
 
 	# MediumMotor
@@ -242,27 +269,49 @@ class SimpleIO(threading.Thread):
 		try:
 			return self.mediumMotor.position
 		except (AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable MediumMotor')
 			self.mediumMotor = None
+		except ValueError as e:
+			print(str(e))
 		return 0
 
 	def resetMediumMotorPosition(self):
 		try:
 			self.mediumMotor.on(0, brake=False)
 			self.mediumMotor.position = 0
+			return True
 		except (AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable MediumMotor')
 			self.mediumMotor = None
+		except ValueError as e:
+			print(str(e))
+		return False
 
-	def turnMediumMotorByAngle(self, angle):
+	def turnMediumMotorByAngle(self, speed, angle):
 		try:
-			self.mediumMotor.on_for_degrees(80, angle)
+			self.mediumMotor.on_for_degrees(speed, angle)
+			return True
 		except(AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable MediumMotor')
 			self.mediumMotor = None
+		except ValueError as e:
+			print(str(e))
+		return False
 
 	def activateMediumMotor(self, dutyCycle):
 		try:
 			self.mediumMotor.on(dutyCycle)
+			return True
 		except(AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable MediumMotor')
 			self.mediumMotor = None
+		except ValueError as e:
+			print(str(e))
+		return False
 
 	# MoveSteering
 
@@ -272,160 +321,145 @@ class SimpleIO(threading.Thread):
 	def resetMoveSteering(self):
 		try:
 			self.moveSteering.on(0, 0)
+			return True
 		except (AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable MoveSteering')
 			self.moveSteering = None
+		except ValueError as e:
+			print(str(e))
+		return False
 
 	def activateMoveSteering(self, steering, speed):
 		try:
 			self.moveSteering.on(steering, speed)
+			return True
 		except(AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable MoveSteering')
 			self.moveSteering = None
+		except ValueError as e:
+			print(str(e))
+		return False
 
-	def turnMoveSteeringByAngle(self, angle):
+	def turnMoveSteeringByAngle(self, speed, steering, angle):
 		try:
-			self.moveSteering.on_for_degrees(100, 50, angle)
+			self.moveSteering.on_for_degrees(steering, speed, angle)
+			return True
 		except(AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable MoveSteering')
 			self.moveSteering = None
+		except ValueError as e:
+			print(str(e))
+		return False
 
 	# PowerSupply
 
 	def readCurrentMA(self):
-		return round(self.powerSupply.measured_current / 1000, 1)
+		try:
+			return round(self.powerSupply.measured_current / 1000, 1)
+		except(AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable PowerSupply (ev3Driver)')
+			self.powerSupply = None
+		except ValueError as e:
+			print(str(e))
+		return 0
 
 	def readVoltageV(self):
-		return round(self.powerSupply.measured_voltage / 1000000, 1)
+		try:
+			return round(self.powerSupply.measured_voltage / 1000000, 1)
+		except(AttributeError, DeviceNotFound) as e:
+			print(str(e))
+			print('Disable PowerSupply (ev3Driver)')
+			self.powerSupply = None
+		except ValueError as e:
+			print(str(e))
+		return 0
 
-	# others
+	def enableNotification(self, topic, notificationId, data):
 
-	def readAll(self):
-		print(
-			str(self.readTouchSensorPressed()) + '\t' +
-			str(self.readAmbientLightIntensity()) + '\t' +
-			str(self.readReflectedLightIntensity()) + '\t' +
-			str(self.readColor()) + '\t' +
-			str(self.readColorName()) + '\t' +
-			str(self.readColorRaw()) + '\t' +
-			str(self.readDistanceCentimeter()) + '\t' +
-			str(self.readGyroAngle()) + '\t' +
-			str(self.readMediumMotorPosition()) + '\t' +
-			str(self.readCurrentMA()) + '\t' +
-			str(self.readVoltageV())
-		)
+		if notificationId in self.notificationCallbacks.keys():
+			print('enable notification for id: ' + notificationId)
+			self.notificationCallbacks[notificationId][0] = True
+		else:
+			print('cannot enable notification. no notification callback registered under id: ' + notificationId)
 
-	def registerNotificationCallback(self, notificationId, callback):
+	def disableNotification(self, topic, notificationId, data):
+		if notificationId in self.notificationCallbacks.keys():
+			print('disable notification for id: ' + notificationId)
+			self.notificationCallbacks[notificationId][0] = False
+		else:
+			print('cannot disable notification. no notification callback registered under id: ' + notificationId)
+
+	def registerNotificationCallback(self, notificationId, data, callback):
 		if notificationId in self.notificationCallbacks.keys():
 			print('notification callback for this device already registered')
-			return
-		self.notificationCallbacks[notificationId] = callback
+		else:
+			readFunc = self.getReadFunc(notificationId)
+			self.notificationCallbacks[notificationId] = [False, callback, data, readFunc]
+
+	def getReadFunc(self, notificationId):
+		if notificationId == 'color-present':
+			return self.colorSensorPresent
+		elif notificationId == 'color-reflected':
+			return self.readReflectedLightIntensity
+		elif notificationId == 'color-ambient':
+			return self.readAmbientLightIntensity
+		elif notificationId == 'color-id':
+			return self.readColor
+		elif notificationId == 'color-name':
+			return self.readColorName
+		elif notificationId == 'color-raw':
+			return self.readColorRaw
+		elif notificationId == 'touch-present':
+			return self.touchSensorPresent
+		elif notificationId == 'touch-pressed':
+			return self.readTouchSensorPressed
+		elif notificationId == 'ultrasonic-present':
+			return self.ultrasonicSensorPresent
+		elif notificationId == 'ultrasonic-distance':
+			return self.readDistanceCentimeter
+		elif notificationId == 'gyro-present':
+			return self.gyroSensorPresent
+		elif notificationId == 'gyro-angle':
+			return self.readGyroAngle
+		elif notificationId == 'motor-present':
+			return self.mediumMotorPresent
+		elif notificationId == 'motor-position':
+			return self.readMediumMotorPosition
+		elif notificationId == 'steering-present':
+			return self.moveSteeringPresent
+		elif notificationId == 'voltage':
+			return self.readVoltageV
+		elif notificationId == 'current':
+			return self.readCurrentMA
+		else:
+			print('no read func for id: ' + notificationId)
+			return None
 
 	def notify(self, notificationId, value):
 		if notificationId in self.notificationCallbacks.keys():
 			self.notificationCallbacks[notificationId](value)
 
+	def setNotificationPeriod(self, milliseconds):
+		if 10 <= milliseconds <= 10000:
+			self.period = milliseconds/1000
+			return True
+		return False
+
 	def run(self):
 		while self.isRunning:
-			touchPresent = self.touchSensorPresent()
-			touchPressed = self.readTouchSensorPressed()
-			colorPresent = self.colorSensorPresent()
-			color = self.readColor()
-			colorName = self.readColorName()
-			colorRaw = self.readColorRaw()
-			reflectedLightIntensity = self.readReflectedLightIntensity()
-			ambientLightIntensity = self.readAmbientLightIntensity()
-			ultrasonicPresent = self.ultrasonicSensorPresent()
-			ultrasonicDistanceCentimeter = self.readDistanceCentimeter()
-			gyroPresent = self.gyroSensorPresent()
-			gyroAngle = self.gyroPresent
-			mediumMotorPresent = self.mediumMotorPresent()
-			mediumMotorPosition = self.readMediumMotorPosition()
-			moveSteeringPresent = self.moveSteeringPresent()
-			voltageV = self.readVoltageV()
-			currentMA = self.readCurrentMA()
 
-			deviceStateChanged = False
-			if touchPresent != self.touchPresent:
-				self.touchPresent = touchPresent
-				deviceStateChanged = True
-			if colorPresent != self.colorPresent:
-				self.colorPresent = colorPresent
-				deviceStateChanged = True
-			if ultrasonicPresent != self.ultrasonicPresent:
-				self.ultrasonicPresent = ultrasonicPresent
-				deviceStateChanged = True
-			if gyroPresent != self.gyroPresent:
-				self.gyroPresent = gyroPresent
-				deviceStateChanged = True
-			if mediumMotorPresent != self.mediumMotorPresent:
-				self.mediumMotorPresent = mediumMotorPresent
-				deviceStateChanged = True
-			if moveSteeringPresent != self.moveSteeringPresent:
-				self.moveSteeringPresent = moveSteeringPresent
-				deviceStateChanged = True
-			if deviceStateChanged:
-				data = dict()
-				data['touch'] = self.touchPresent
-				data['color'] = self.colorPresent
-				data['ultrasonic'] = self.ultrasonicPresent
-				data['gyro'] = self.gyroPresent
-				data['mediumMotor'] = self.mediumMotorPresent
-				data['moveSteering'] = self.moveSteeringPresent
-				self.notify('deviecState', data)
-
-			if touchPressed != self.touchPressed:
-				self.touchPressed = touchPressed
-				self.notify('touch', self.touchPressed)
-
-			colorChanged = False
-			if color != self.color:
-				self.color = color
-				colorChanged = True
-			if colorName != self.colorName:
-				self.colorName = colorName
-				colorChanged = True
-			if colorRaw != self.colorRaw:
-				self.colorRaw = colorRaw
-				colorChanged = True
-			if reflectedLightIntensity != self.reflectedLightIntensity:
-				self.reflectedLightIntensity = reflectedLightIntensity
-				colorChanged = True
-			if ambientLightIntensity != self.ambientLightIntensity:
-				self.ambientLightIntensity = ambientLightIntensity
-				colorChanged = True
-			if colorChanged:
-				data = dict()
-				data['color'] = self.color
-				data['colorName'] = self.colorName
-				data['colorRaw'] = self.colorRaw
-				data['reflectedLightIntensity'] = self.reflectedLightIntensity
-				data['ambientLightIntensity'] = self.ambientLightIntensity
-				self.notify('color', data)
-
-			if ultrasonicDistanceCentimeter != self.ultrasonicDistanceCentimeter:
-				self.ultrasonicDistanceCentimeter = ultrasonicDistanceCentimeter
-				self.notify('ultrasonic', self.ultrasonicDistanceCentimeter)
-
-			if gyroAngle != self.gyroAngle:
-				self.gyroAngle = gyroAngle
-				self.notify('gyro', self.gyroAngle)
-
-			if mediumMotorPosition != self.mediumMotorPosition:
-				self.mediumMotorPosition = mediumMotorPosition
-				self.notify('mediumMotor', self.mediumMotorPosition)
-
-			powerSupplyChanged = False
-			if voltageV != self.voltageV:
-				self.voltageV = voltageV
-				powerSupplyChanged = True
-			if currentMA != self.currentMA:
-				self.currentMA = currentMA
-				powerSupplyChanged = True
-			if powerSupplyChanged:
-				data = dict()
-				data['voltageV'] = self.voltageV
-				data['currentMA'] = self.currentMA
-				self.notify('power', data)
-
-			sleep(0.1)
+			for id in self.notificationCallbacks.keys():
+				enabled = self.notificationCallbacks[id][0]
+				callback = self.notificationCallbacks[id][1]
+				contextData = self.notificationCallbacks[id][2]
+				readFunc = self.notificationCallbacks[id][3]
+				if enabled:
+					callback(contextData, str(readFunc()))
+			sleep(self.period)
 
 	def stop(self):
 		self.isRunning = False

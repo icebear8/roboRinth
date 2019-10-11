@@ -3,7 +3,7 @@
 import paho.mqtt.client as mqtt
 from time import sleep
 
-class SimpleMqtt:
+class Mqtt:
 
 	def __init__(self, mqttConfig, rootTopic):
 		self.msgHandlers = dict()
@@ -83,28 +83,22 @@ class SimpleMqtt:
 		if msg.topic not in self.msgHandlers:
 			print('no message handler registered for message with payload: ' + payload)
 		else:
-			self.msgHandlers[msg.topic](msg.topic, payload)
+			self.msgHandlers[msg.topic][1](msg.topic, self.msgHandlers[msg.topic][0], payload)
 
 	def setStatusChangedCallback(self, callback):
 		self.statusChangedCallback = callback
 
-	def registerMessageHandler(self, topic, messageHandler):
-		t = self.rootTopic + topic
-		if t in self.msgHandlers.keys():
+	def registerMessageHandler(self, requestTopic, responseTopic, messageHandler):
+		rootRequestTopic = self.rootTopic + requestTopic
+
+		if rootRequestTopic in self.msgHandlers.keys():
 			print('messageHandler for this topic already registered')
 			return
-		self.msgHandlers[t] = messageHandler
+		self.msgHandlers[rootRequestTopic] = (responseTopic, messageHandler)
 
-	def publishUnderRootTopic(self, topic, message):
+	def publish(self, topic, message):
 		t = self.rootTopic + topic
 		self.client.publish(t, message)
-	
-	def publish(self, topic, message):
-		self.client.publish(topic, message)
-
-	def publishResponse(self, topic, message):
-		t = topic + '/response'
-		self.publish(t, message)
 
 	def exit(self):
 		self.intendedDisconnect = True

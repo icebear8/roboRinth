@@ -10,8 +10,8 @@ from ev3dev2.led import Leds
 
 import ev3dev2.fonts as fonts
 
-class SimpleUi(threading.Thread):
 
+class Ui(threading.Thread):
 	M_FONT = 'helvB12'
 
 	def __init__(self, config):
@@ -24,19 +24,20 @@ class SimpleUi(threading.Thread):
 		self.statusText = '-'
 		self.powerSupplyText = '-'
 		self.lcd = Display()
-		self.lcd.clear()
-		self.drawText()
-		self.lcd.update()
 		self.btn = Button()
 		self.sound = Sound()
 		self.leds = Leds()
-		#14 28 42 56
+		self.theFont = fonts.load(Ui.M_FONT)
+		self.lcd.clear()
+		self.drawText()
+		self.lcd.update()
+
 	def drawText(self):
-		self.lcd.draw.text((0,0), 'RoboRinth', font=fonts.load(SimpleUi.M_FONT))
-		self.lcd.draw.text((0,14), 'ID: ' + self.roboId, font=fonts.load(SimpleUi.M_FONT))
-		self.lcd.draw.text((0,28), 'Status: ' + self.statusText, font=fonts.load(SimpleUi.M_FONT))
-		self.lcd.draw.text((0,42), 'Msg: ' + self.messageText, font=fonts.load(SimpleUi.M_FONT))
-		self.lcd.draw.text((0,56), 'Pwr: ' + self.powerSupplyText, font=fonts.load(SimpleUi.M_FONT))
+		self.lcd.draw.text((0, 0), 'RoboRinth', font=self.theFont)
+		self.lcd.draw.text((0, 14), 'ID: ' + self.roboId, font=self.theFont)
+		self.lcd.draw.text((0, 28), 'Status: ' + self.statusText, font=self.theFont)
+		self.lcd.draw.text((0, 42), 'Msg: ' + self.messageText, font=self.theFont)
+		# self.lcd.draw.text((0,56), 'Pwr: ' + self.powerSupplyText, font=self.theFont)
 
 	def run(self):
 		while self.isRunning:
@@ -44,10 +45,10 @@ class SimpleUi(threading.Thread):
 			self.drawText()
 			self.lcd.update()
 			self.btn.process()
-			sleep(0.01)
-		sleep(0.5)
+			sleep(1)
+		# sleep(0.5)
 		self.lcd.clear()
-		self.lcd.draw.rectangle((0,0,178,128), fill='white')
+		self.lcd.draw.rectangle((0, 0, 178, 128), fill='white')
 		self.lcd.update()
 
 	def registerBackspaceHandler(self, backspaceHandler):
@@ -67,7 +68,7 @@ class SimpleUi(threading.Thread):
 		self.powerSupplyText = text;
 
 	def playStartSound(self):
-		self.sound.tone([(800,200,0),(1200,400,100)])
+		self.sound.tone([(800, 200, 0), (1200, 400, 100)])
 
 	def setStatusLed(self, color):
 		if color == 'green':

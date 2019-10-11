@@ -1,200 +1,152 @@
 #!/usr/bin/env python3
 
 from ev3dev.auto import *
-from classes.SimpleUi import SimpleUi
-from classes.SimpleMqtt import SimpleMqtt
-from classes.SimpleIO import SimpleIO
-from classes.JsonConfig import loadJsonFile
+from robo.Ui import Ui
+from robo.Mqtt import Mqtt
+from robo.Io import Io
+from robo.JsonConfig import loadJsonFile
 import json
 
 configFile = '../config/config.json'
 
-
 def main():
 	config = loadJsonFile(configFile)
 
-	ui = SimpleUi(config['robot'])
-	mqtt = SimpleMqtt(config['mqtt'], config['robot']['id'])
-	io = SimpleIO()
+	ui = Ui(config['robot'])
+	mqtt = Mqtt(config['mqtt'], config['robot']['id'])
+	io = Io()
 
-	# SimpleMqtt
+	# Mqtt connection status
 	def statusChangedCallback(status):
 		ui.setStatusText(status)
 		if status == 'Connected':
 			ui.setStatusLed('green')
-			#ui.playStartSound()
+			# ui.playStartSound()
 		else:
 			ui.setStatusLed('orange')
 
-	# General Messages
-	def handleControlMessage(topic, payload):
-		print('handle control message: ' + payload)
+	# Control Messages
+	def handleControlMessage(topic, responseTopic, payload):
 		if payload == 'Q':
-			print('disconnect')
-			mqtt.disconnect()
+			print('received Quit Command')
+			mqtt.publish(responseTopic, str(True))
+			mqtt.exit()
+		else:
+			mqtt.publish(responseTopic, str(False))
 
-	def handleText(topic, payload):
-		print('handle text: ' + payload)
+	def handleText(topic, responseTopic, payload):
 		ui.setMessageText(payload)
+		mqtt.publish(responseTopic, str(True))
 
 	# TouchSensor
-	def returnTouchSensorPresent(topic, payload):
+	def returnTouchSensorPresent(topic, responseTopic, payload):
 		val = io.touchSensorPresent()
-		print('publish response TouchSensor present: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def returnTouchSensorPressed(topic, payload):
+	def returnTouchSensorPressed(topic, responseTopic, payload):
 		val = io.readTouchSensorPressed()
-		print('publish response TouchSensor pressed: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
 	# ColorSensor
-	def returnColorSensorPresent(topic, payload):
+	def returnColorSensorPresent(topic, responseTopic, payload):
 		val = io.colorSensorPresent()
-		print('publish response ColorSensor present: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def returnColorSensorReflectedLightIntensity(topic, payload):
+	def returnColorSensorReflectedLightIntensity(topic, responseTopic, payload):
 		val = io.readReflectedLightIntensity()
-		print('publish response ColorSensor reflected light intensity: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def returnColorSensorAmbientLightIntensity(topic, payload):
+	def returnColorSensorAmbientLightIntensity(topic, responseTopic, payload):
 		val = io.readAmbientLightIntensity()
-		print('publish response ColorSensor ambient light intensity: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def returnColorSensorColor(topic, payload):
+	def returnColorSensorColor(topic, responseTopic, payload):
 		val = io.readColor()
-		print('publish response ColorSensor color: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def returnColorSensorColorName(topic, payload):
+	def returnColorSensorColorName(topic, responseTopic, payload):
 		val = io.readColorName()
-		print('publish response ColorSensor color name: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def returnColorSensorColorRaw(topic, payload):
+	def returnColorSensorColorRaw(topic, responseTopic, payload):
 		val = io.readColorRaw()
-		print('publish response ColorSensor color: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
 	# UltrasonicSensor
-	def returnUltrasonicSensorPresent(topic, payload):
+	def returnUltrasonicSensorPresent(topic, responseTopic, payload):
 		val = io.ultrasonicSensorPresent()
-		print('publish response UltrasonicSensor present: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
-	
-	def returnUltraSonicSensorDistanceCentimeter(topic, payload):
+		mqtt.publish(responseTopic, str(val))
+
+	def returnUltraSonicSensorDistanceCentimeter(topic, responseTopic, payload):
 		val = io.readDistanceCentimeter()
-		print('publish response UltrasonicSensor distance centimeter: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
 	# GyroSensor
-	def returnGyroSensorPresent(topic, payload):
+	def returnGyroSensorPresent(topic, responseTopic, payload):
 		val = io.gyroSensorPresent()
-		print('publish response GyroSensor present: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
-	
-	def resetGyroSensor(topic, payload):
-		print('reset GyroSensor')
-		io.resetGyroSensor()
-		
-	def returnGyroSensorAngle(topic, payload):
+		mqtt.publish(responseTopic, str(val))
+
+	def resetGyroSensor(topic, responseTopic, payload):
+		mqtt.publish(responseTopic, str(io.resetGyroSensor()))
+
+	def returnGyroSensorAngle(topic, responseTopic, payload):
 		val = io.readGyroAngle()
-		print('publish response GyroSensor angle: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
 	# MediumMotor
-	def returnMediumMotorPresent(topic, payload):
+	def returnMediumMotorPresent(topic, responseTopic, payload):
 		val = io.mediumMotorPresent()
-		print('publish response MediumMotor present: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def returnMediumMotorPosition(topic, payload):
+	def returnMediumMotorPosition(topic, responseTopic, payload):
 		val = io.readMediumMotorPosition()
-		print('publish response MediumMotor position: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def resetMediumMotorPosition(topic, payload):
-		print('reset MediumMotor position')
-		io.resetMediumMotorPosition()
+	def resetMediumMotorPosition(topic, responseTopic, payload):
+		mqtt.publish(responseTopic, str(io.resetMediumMotorPosition()))
 
-	def turnMediumMotorByAngle(topic, payload):
+	def turnMediumMotorByAngle(topic, responseTopic, payload):
+		data = json.loads(payload)
+		angle = float(data['angle'])
+		speed = float(data['speed'])
+		mqtt.publish(responseTopic, str(io.turnMediumMotorByAngle(speed, angle)))
+
+	def activateMediumMotor(topic, responseTopic, payload):
 		val = float(payload)
-		print('turn MediumMotor by angle: ' + str(val))
-		io.turnMediumMotorByAngle(val)
-
-	def activateMediumMotor(topic, payload):
-		val = float(payload)
-		print('activate MediumMotor with duty cycle: ' + str(val))
-		io.activateMediumMotor(val)
+		mqtt.publish(responseTopic, str(io.activateMediumMotor(val)))
 
 	# MoveSteering
-	def returnMoveSteeringPresent(topic, payload):
+	def returnMoveSteeringPresent(topic, responseTopic, payload):
 		val = io.moveSteeringPresent()
-		print('publish response MoveSteering present: ' + str(val))
-		mqtt.publishResponse(topic, str(val))
+		mqtt.publish(responseTopic, str(val))
 
-	def resetMoveSteering(topic, payload):
-		print('reset MoveSteering')
-		io.resetMoveSteering()
+	def resetMoveSteering(topic, responseTopic, payload):
+		mqtt.publish(responseTopic, str(io.resetMoveSteering()))
 
-	def activateMoveSteering(topic, payload):
+	def activateMoveSteering(topic, responseTopic, payload):
 		data = json.loads(payload)
 		steering = float(data['steering'])
 		speed = float(data['speed'])
-		print('activate MediumMotor with steering: ' + str(steering) + ' and speed: ' + str(speed))
-		io.activateMoveSteering(steering, speed)
+		mqtt.publish(responseTopic, str(io.activateMoveSteering(steering, speed)))
 
-	def turnMoveSteeringByAngle(topic, payload):
+	def turnMoveSteeringByAngle(topic, responseTopic, payload):
+		data = json.loads(payload)
+		steering = float(data['steering'])
+		speed = float(data['speed'])
+		angle = float(data['angle'])
+		mqtt.publish(responseTopic, str(io.turnMoveSteeringByAngle(speed, steering, angle)))
+
+	def returnPowerVoltage(topic, responseTopic, payload):
+		val = io.readVoltageV()
+		mqtt.publish(responseTopic, str(val))
+
+	def returnPowerCurrent(topic, responseTopic, payload):
+		val = io.readCurrentMA()
+		mqtt.publish(responseTopic, str(val))
+
+	def setNotificationPeriod(topic, responseTopic, payload):
 		val = float(payload)
-		print('turn MoveSteering by angle: ' + str(val))
-		io.turnMoveSteeringByAngle(val)
-
-	# notifications
-	def notifyDeviceState(data):
-		print('notify device state')
-		print(str(data))
-		mqtt.publishUnderRootTopic('deviceState/notification', json.dumps(data))
-	io.registerNotificationCallback('deviceState', notifyDeviceState)
-
-	def notifyTouchPressend(pressed):
-		print('notify touch pressed')
-		print(str(pressed))
-		mqtt.publishUnderRootTopic('touch/notification', str(pressed))
-	io.registerNotificationCallback('touch', notifyTouchPressend)
-
-	def notifyColorChanged(data):
-		print('notify color')
-		print(str(data))
-		mqtt.publishUnderRootTopic('color/notification', json.dumps(data))
-	io.registerNotificationCallback('color', notifyColorChanged)
-
-	def notifyDistanceChanged(centimeter):
-		print('notify distance')
-		print(str(centimeter))
-		mqtt.publishUnderRootTopic('ultrasonic/notification', str(centimeter))
-	io.registerNotificationCallback('ultrasonic', notifyDistanceChanged)
-
-	def notifyGyroAngleChanged(angle):
-		print('notify gyro angle')
-		print(str(angle))
-		mqtt.publishUnderRootTopic('gyro/notification', str(angle))
-	io.registerNotificationCallback('gyro', notifyGyroAngleChanged)
-
-	def notifyMediumMotorPosition(position):
-		print('notify medium motor position')
-		print(str(position))
-		mqtt.publishUnderRootTopic('motor/notification', str(position))
-	io.registerNotificationCallback('mediumMotor', notifyMediumMotorPosition)
-
-	def notifyPowerSupply(data):
-		print('notify power supply')
-		print(str(data))
-		ui.setPowerSupplyText(str(data['voltageV']) + ' V / ' + str(data['currentMA']) + ' mA')
-		mqtt.publishUnderRootTopic('power', notifyPowerSupply)
-	io.registerNotificationCallback('power', notifyPowerSupply)
+		mqtt.publish(responseTopic, str(io.setNotificationPeriod(val)))
 
 	# UI
 	def handleBackspacePressed(isPressed):
@@ -204,39 +156,98 @@ def main():
 			mqtt.exit()
 
 	ui.registerBackspaceHandler(handleBackspacePressed)
-	ui.start()
-	ui.setPowerSupplyText(str(io.readVoltageV()) + ' V / ' + str(int(io.readCurrentMA())) + ' mA')
-
-	io.start()
 
 	mqtt.setStatusChangedCallback(statusChangedCallback)
-	mqtt.registerMessageHandler('ctrl', handleControlMessage)
-	mqtt.registerMessageHandler('txt', handleText)
-	mqtt.registerMessageHandler('color/present', returnColorSensorPresent)
-	mqtt.registerMessageHandler('color/reflected', returnColorSensorReflectedLightIntensity)
-	mqtt.registerMessageHandler('color/ambient', returnColorSensorAmbientLightIntensity)
-	mqtt.registerMessageHandler('color/color', returnColorSensorColor)
-	mqtt.registerMessageHandler('color/colorname', returnColorSensorColorName)
-	mqtt.registerMessageHandler('color/colorraw', returnColorSensorColorRaw)
-	mqtt.registerMessageHandler('touch/present', returnTouchSensorPresent)
-	mqtt.registerMessageHandler('touch/pressed', returnTouchSensorPressed)
-	mqtt.registerMessageHandler('ultrasonic/present', returnUltrasonicSensorPresent)
-	mqtt.registerMessageHandler('ultrasonic/distance', returnUltraSonicSensorDistanceCentimeter)
-	mqtt.registerMessageHandler('gyro/present', returnGyroSensorPresent)
-	mqtt.registerMessageHandler('gyro/angle', returnGyroSensorAngle)
-	mqtt.registerMessageHandler('gyro/reset', resetGyroSensor)
-	mqtt.registerMessageHandler('motor/present', returnMediumMotorPresent)
-	mqtt.registerMessageHandler('motor/position', returnMediumMotorPosition)
-	mqtt.registerMessageHandler('motor/reset', resetMediumMotorPosition)
-	mqtt.registerMessageHandler('motor/turn', turnMediumMotorByAngle)
-	mqtt.registerMessageHandler('motor/activate', activateMediumMotor)
-	mqtt.registerMessageHandler('steering/present', returnMoveSteeringPresent)
-	mqtt.registerMessageHandler('steering/activate', activateMoveSteering)
-	mqtt.registerMessageHandler('steering/reset', resetMoveSteering)
-	mqtt.registerMessageHandler('steering/turn', turnMoveSteeringByAngle)
 
-	
-	mqtt.exec()
+	mqtt.registerMessageHandler('request/ctrl', 'response/ctrl',  handleControlMessage)
+	mqtt.registerMessageHandler('request/txt', 'response/txt', handleText)
+	mqtt.registerMessageHandler('request/color/present', 'response/color/present', returnColorSensorPresent)
+	mqtt.registerMessageHandler('request/color/reflected', 'response/color/reflected', returnColorSensorReflectedLightIntensity)
+	mqtt.registerMessageHandler('request/color/ambient', 'response/color/ambient', returnColorSensorAmbientLightIntensity)
+	mqtt.registerMessageHandler('request/color/id', 'response/color/id', returnColorSensorColor)
+	mqtt.registerMessageHandler('request/color/name', 'response/color/name', returnColorSensorColorName)
+	mqtt.registerMessageHandler('request/color/raw', 'response/color/raw', returnColorSensorColorRaw)
+	mqtt.registerMessageHandler('request/touch/present', 'response/touch/present', returnTouchSensorPresent)
+	mqtt.registerMessageHandler('request/touch/pressed', 'response/touch/pressed', returnTouchSensorPressed)
+	mqtt.registerMessageHandler('request/ultrasonic/present', 'response/ultrasonic/present', returnUltrasonicSensorPresent)
+	mqtt.registerMessageHandler('request/ultrasonic/distance', 'response/ultrasonic/distance', returnUltraSonicSensorDistanceCentimeter)
+	mqtt.registerMessageHandler('request/gyro/present', 'response/gyro/present', returnGyroSensorPresent)
+	mqtt.registerMessageHandler('request/gyro/angle', 'response/gyro/angle', returnGyroSensorAngle)
+	mqtt.registerMessageHandler('request/gyro/reset', 'response/gyro/reset', resetGyroSensor)
+	mqtt.registerMessageHandler('request/motor/present', 'response/motor/present', returnMediumMotorPresent)
+	mqtt.registerMessageHandler('request/motor/position', 'response/motor/position', returnMediumMotorPosition)
+	mqtt.registerMessageHandler('request/motor/reset', 'response/motor/reset', resetMediumMotorPosition)
+	mqtt.registerMessageHandler('request/motor/turn', 'response/motor/turn', turnMediumMotorByAngle)
+	mqtt.registerMessageHandler('request/motor/activate', 'response/motor/activate', activateMediumMotor)
+	mqtt.registerMessageHandler('request/steering/present', 'response/steering/present', returnMoveSteeringPresent)
+	mqtt.registerMessageHandler('request/steering/activate', 'response/steering/activate', activateMoveSteering)
+	mqtt.registerMessageHandler('request/steering/reset', 'response/steering/reset', resetMoveSteering)
+	mqtt.registerMessageHandler('request/steering/turn', 'response/steering/turn', turnMoveSteeringByAngle)
+	mqtt.registerMessageHandler('request/power/voltage', 'response/power/voltage', returnPowerVoltage)
+	mqtt.registerMessageHandler('request/power/current', 'response/power/current', returnPowerCurrent)
+	mqtt.registerMessageHandler('request/notper', 'response/notper', setNotificationPeriod)
+
+	mqtt.registerMessageHandler('subscribe/color/present', 'color-present', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/color/reflected', 'color-reflected', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/color/ambient', 'color-ambient', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/color/id', 'color-id', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/color/name', 'color-name', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/color/raw', 'color-raw', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/touch/present', 'touch-present', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/touch/pressed', 'touch-pressed', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/ultrasonic/present', 'ultrasonic-present', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/ultrasonic/distance', 'ultrasonic-distance', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/gyro/present', 'gyro-present', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/gyro/angle', 'gyro-angle', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/motor/present', 'motor-present', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/motor/position', 'motor-position', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/steering/present', 'steering-present', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/power/voltage', 'voltage', io.enableNotification)
+	mqtt.registerMessageHandler('subscribe/power/current', 'current', io.enableNotification)
+
+	mqtt.registerMessageHandler('unsubscribe/color/present', 'color-present', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/color/reflected', 'color-reflected', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/color/ambient', 'color-ambient', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/color/id', 'color-id', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/color/name', 'color-name', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/color/raw', 'color-raw', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/touch/present', 'touch-present', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/touch/pressed', 'touch-pressed', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/ultrasonic/present', 'ultrasonic-present', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/ultrasonic/distance', 'ultrasonic-distance', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/gyro/present', 'gyro-present', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/gyro/angle', 'gyro-angle', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/motor/present', 'motor-present', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/motor/position', 'motor-position', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/steering/present', 'steering-present', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/power/voltage', 'voltage', io.disableNotification)
+	mqtt.registerMessageHandler('unsubscribe/power/current', 'current', io.disableNotification)
+
+	io.registerNotificationCallback('color-present', 'notification/color/present', mqtt.publish)
+	io.registerNotificationCallback('color-reflected', 'notification/color/reflected', mqtt.publish)
+	io.registerNotificationCallback('color-ambient', 'notification/color/ambient', mqtt.publish)
+	io.registerNotificationCallback('color-id', 'notification/color/id', mqtt.publish)
+	io.registerNotificationCallback('color-name', 'notification/color/name', mqtt.publish)
+	io.registerNotificationCallback('color-raw', 'notification/color/raw', mqtt.publish)
+	io.registerNotificationCallback('touch-present', 'notification/touch/present', mqtt.publish)
+	io.registerNotificationCallback('touch-pressed', 'notification/touch/pressed', mqtt.publish)
+	io.registerNotificationCallback('ultrasonic-present', 'notification/ultrasonic/present', mqtt.publish)
+	io.registerNotificationCallback('ultrasonic-distance', 'notification/ultrasonic/distance', mqtt.publish)
+	io.registerNotificationCallback('gyro-present', 'notification/gyro/present', mqtt.publish)
+	io.registerNotificationCallback('gyro-angle', 'notification/gyro/angle', mqtt.publish)
+	io.registerNotificationCallback('motor-present', 'notification/motor/present', mqtt.publish)
+	io.registerNotificationCallback('motor-position', 'notification/motor/position', mqtt.publish)
+	io.registerNotificationCallback('steering-present', 'notification/steering/present', mqtt.publish)
+	io.registerNotificationCallback('voltage', 'notification/power/voltage', mqtt.publish)
+	io.registerNotificationCallback('current', 'notification/power/current', mqtt.publish)
+
+	print('start io thread')
+	io.start()
+	print('start ui thread')
+	ui.start()
+	print('start mqtt client')
+	mqtt.exec()  # blocking
+	io.stop()
 	ui.stop()
 	print('quit application')
 

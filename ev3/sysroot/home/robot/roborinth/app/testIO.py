@@ -11,8 +11,5 @@ def main():
 	config = loadJsonFile(configFile)
 	io = SimpleIO(config['io'])
 
-	while True:
-		io.readAll()
-		sleep(1)
 
 main()

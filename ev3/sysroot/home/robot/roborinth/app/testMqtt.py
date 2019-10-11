@@ -20,9 +20,9 @@ def main():
 
 	def onMqttConnected():
 		print('connected')
-		mqtt.publishUnderRootTopic('color/present/', 'asd') # seems not to work inside onConnected callback
+		mqtt.publish('color/present/', 'asd')
 
-	mqtt.registerMessageHandler('echo', echoMessage)
+	mqtt.registerMessageHandler('test/request', 'test/response', echoMessage)
 	mqtt.registerMessageHandler('color/present/response', showStateAndExit)
 	mqtt.setOnConnectCallback(onMqttConnected)
 	mqtt.exec()
