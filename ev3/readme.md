@@ -15,6 +15,10 @@ Unter anderem kann dort die IP Adresse des MQTT Hosts angepasst werden.
 
 [IP Adressen der Roboter](../infrastructure/readme.md)
 
+## Deployment
+Die vorkonfigurierte Python Applikation oder sonst eine Python/Java Applikation kann auf dem Host entwickelt werden und anschliessend z.B. mittels WinSCP aufs target deployed werden. Der systemd service **roborinth** startet die Applikation nach dem Bootvorgang automatisch.
+Für eine C/C++ Anwendung gibt es zur Zeit keine Cross-Compilation Toolchain. Man müsste in diesem Fall auf dem Target kompilieren.
+
 ## MQTT API
 
 Jeder Roboter sendet und empfängt Nachrichten unter einem speziellen **Root-Topic**, das der **ID des Roboters** entspricht. 
