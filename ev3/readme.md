@@ -24,10 +24,10 @@ Die Notifikationsperiode beträgt standarmässig 1 Sekunde.
 ### Requests and Responses
 
 Note: 
-- MessageData is always send as plain string
+- Data is always send as plain string
 - Each topic has to be prefixed with robot-id. e.g. `robo-01/request/gyro/angle` 
 
-|Request-Topic                |Request-Data                             | Description |
+|Request-Topic                |Data                                     | Description |
 |---|---|---|
 |`request/ctrl `              |`char`                                   |`Q` to quit<br>Command for debug purpos |
 |`request/txt `               |`string`                                 |text to be displayed on ev3 Screen<br> for debug purpose|
@@ -58,7 +58,7 @@ Note:
 |`request/notper`             |`int`                                    |set notification period in milliseconds<br>value must be between 10 and 10000<br>default is 1000|
 
 
-|Response-Topic                |Response-Data  |Description|
+|Response-Topic                |Data           |Description|
 |---|---|---|
 |`response/ctrl`               |`bool`         |Command for debug purpose |
 |`response/txt`                |`bool`         |Displays Text on ev3 Screen (debug)|
@@ -91,10 +91,10 @@ Note:
 ### Notifications
 
 Note: 
-- MessageData is always send as plain string
+- Data is always send as plain string
 - Each topic has to be prefixed with robot-id. e.g. `robo-01/request/gyro/angle` 
 
-for detailed info on notification data see response description
+for detailed info on notification data see request/response descriptions
 
 |Topic                                    |Data |
 |---|---|
