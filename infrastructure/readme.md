@@ -1,8 +1,8 @@
 # Infrastruktur
 
 ## Inbetriebnahme
-Router, Roboter (und Raspberry Pi Server?) sind vorkonfiguriert. Es muss also nur alles richtig eingesteckt werden und nach Power-On läuft das Netzwerk. 
-Für Internetzugriff muss zusätzlich noch z.B. ein Mobile Router angehängt werden. Der WAN Port am RoboRInth Router ist vorkonfiguriert, der Gateway Port muss die IP Adresse 192.168.1.1 bekommen (siehe unten).
+Router, Roboter und Raspberry Pi Server sind vorkonfiguriert. Es muss also nur alles richtig eingesteckt werden und nach Power-On läuft das Netzwerk. 
+Für Internetzugriff muss zusätzlich noch z.B. ein Mobile Router angehängt werden. Der WAN Port am RoboRinth Router ist auf Dynamic IP eingestellt.
 
 ## Netzwerk
 <img src="RoboRinth Network.png" width="1000" >
@@ -20,6 +20,9 @@ Für Internetzugriff muss zusätzlich noch z.B. ein Mobile Router angehängt wer
 - WLAN Accesspoint
 - 4x LAN Port
 - 1x WAN Port
+
+## Raspberry Pi MQTT Broker
+- IP Addresse: **192.168.0.200**
 
 ## WLAN Dongle für Roboter
 Die EV3 Roboter haben kein eingebautes WLAN. Es kann aber ein USB WLAN Dongle eingesteckt werden.
@@ -52,10 +55,8 @@ Folgender WLAN-Dongle wurde getestet und hat sich als zuverlässig erwiesen: [Ed
 # ev3dev
 The Linux OS running on the EV3 robots. [https://www.ev3dev.org/](https://www.ev3dev.org/)
 
-## Access
-- SSH via WLAN (Default Port 22)
-- user: *robot*
-- pw: *maker*
+## Startup Configuration, Access and Deployment
+See [ev3 preconfiguration](../ev3/readme.md)
 
 ## Preinstalled Tools
 - Python 2.7.13
@@ -63,14 +64,6 @@ The Linux OS running on the EV3 robots. [https://www.ev3dev.org/](https://www.ev
 - gcc 6.3.0
 - g++ 6.3.0
 - java OpenJDK 11.0.2
-
-## Startup Configuration
-Ein Script soll nach dem Linux Bootvorgang eine "Hello World" Applikation starten. Das Script kann später angepasst werden.
-**tbd** initiales Script
-
-## Deployment
-Eine Python oder Java Applikation kann auf dem Host entwickelt werden und anschliessend z.B. mittels WinSCP aufs target deployed werden.
-Für eine C/C++ Anwendung gibt es zur Zeit keine Cross-Compilation Toolchain. Man müsste in diesem Fall auf dem Target kompilieren.
 
 # FAQ
 - Ich komme mit SSH nicht auf den Roboter drauf, was tun?
