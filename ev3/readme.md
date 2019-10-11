@@ -1,19 +1,28 @@
 # EV3 - RoboRinth App
+Nach dem Bootvorgang wird automatisch eine RoboRinth Applikation gestartet. Die App verbindet sich mit einem MQTT Broker und stellt ein MQTT Interface zur Verfügung zum Lesen und Schreiben von Devices die am ev3 angeschlossen sind.
+Die angeschlossenen Devices werden beim Applikationsstart automatisch detektiert und initialisiert. Es ist wichtig das Sensoren an den Input-Ports (markiert mit 1-4) und Aktoren an den Output-Ports (markiert mit A-D) angeschlossen werden. 
+Auf dem Screen des ev3 wird die Roboter-ID sowie der Connection-Status angezeigt. Zudem signalisieren die LEDs den Connection-Status (grün = ok, orange = keine Verbindung).
+Bei Verbindungsverlust versucht die Applikation automatisch wieder Kontakt zum Host herzustellen.
 
-Die EV3 Roboter so konfiguriert das eine RoboRinth App nach dem Bootvorgang gestartet wird. Die App verbindet sich mit einem MQTT Broker und stellt ein MQTT Interface zur Verfügung zum Lesen und Schreiben von Sensoren/Aktoren
+**Info**: Aufgrund von Stabilitätsproblemen wurde der Ultraschall-Distanzsensor, der Drucksensor und der Servomotor deaktiviert.
 
 ## Konfiguration
 
-Die Konfiguration für die Applikation liegt auf dem Filesystem der EV3 roboter unter **/home/robot/roborinth/config/config.json**. 
-Unter anderem kann die IP Adresse des MQTT Hosts angepasst werden.
+Die Konfiguration für die Applikation liegt auf dem Filesystem der EV3 Roboter unter **/home/robot/roborinth/config/config.json**. 
+Unter anderem kann dort die IP Adresse des MQTT Hosts angepasst werden. 
+
+[Zugriff erfolgt mittels SSH.](https://www.ev3dev.org/docs/tutorials/connecting-to-ev3dev-with-ssh/)
+
+[IP Adressen der Roboter](../infrastructure/readme.md)
 
 ## MQTT API
 
-Jeder Roboter kann Nachrichten publishen und empfangen. **Das Root-Topic ist jeweils die ID des Roboters**. Z.B. robo-01
+Jeder Roboter sendet und empfängt Nachrichten unter einem speziellen **Root-Topic**, das der **ID des Roboters** entspricht. 
+D.h. Der Roboter mit der ID `robo-01` sendet und empfängt nur Nachrichten unter dem Topic `robo-01/...`
 
 Über MQTT können folgende Typen von Nachrichten gesendet werden:
- - **requests** werden vom Roboter ausgeführt, das Resultat wird als **response** gepublished
- - Mit **subscribe** und **unsubscribe** können Notifikationen aktiviert werden
+ - Clients können **requests** publishen, welche vom Roboter ausgeführt werden, das Resultat wird als **response** gepublished
+ - Clients können mit **subscribe** und **unsubscribe** Nachrichten Notifikationen aktivieren
  - **notification** Nachrichten werden mit einer einstellbaren Periode vom Roboter gepublished
 
 Die Notifikationsperiode beträgt standarmässig 1 Sekunde.
@@ -29,8 +38,6 @@ Note:
 
 |Request-Topic                |Data                                     | Description |
 |---|---|---|
-|`request/ctrl `              |`char`                                   |`Q` to quit<br>Command for debug purpos |
-|`request/txt `               |`string`                                 |text to be displayed on ev3 Screen<br> for debug purpose|
 |`request/color/present`      |-                                        |see response|
 |`request/color/reflected`    |-                                        |see response|
 |`request/color/ambient`      |-                                        |see response|
@@ -56,12 +63,12 @@ Note:
 |`request/power/voltage`      |-                                        |see response|
 |`request/power/current`      |-                                        |see response|
 |`request/notper`             |`int`                                    |set notification period in milliseconds<br>value must be between 10 and 10000<br>default is 1000|
+|`request/ctrl `              |`char`                                   |`Q` to quit<br>Command for debug purpos |
+|`request/txt `               |`string`                                 |text to be displayed on ev3 Screen<br> for debug purpose|
 
 
 |Response-Topic                |Data           |Description|
 |---|---|---|
-|`response/ctrl`               |`bool`         |Command for debug purpose |
-|`response/txt`                |`bool`         |Displays Text on ev3 Screen (debug)|
 |`response/color/present`      |`bool`         |returns `True` if ColorSensor is present<br>in case of `False` color topics return **invalid** values|
 |`response/color/reflected`    |`int`          |read reflected light intensity from [ColorSensor](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/sensors.html#color-sensor)|
 |`response/color/ambient`      |`int`          |read ambient light intensity from [ColorSensor](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/sensors.html#color-sensor)|
@@ -87,6 +94,8 @@ Note:
 |`response/power/voltage`      |`decimal`      |returns battery pack voltage in Volts|
 |`response/power/current`      |`decimal`      |returns current draw in MilliAmps|
 |`response/notper`             |`bool`         |`True` if request was successful<br>**to low value leads to system instability**
+|`response/ctrl`               |`bool`         |Command for debug purpose |
+|`response/txt`                |`bool`         |Displays Text on ev3 Screen (debug)|
 
 ### Notifications
 
