@@ -4,8 +4,6 @@ Die angeschlossenen Devices werden beim Applikationsstart automatisch detektiert
 Auf dem Screen des ev3 wird die Roboter-ID sowie der Connection-Status angezeigt. Zudem signalisieren die LEDs den Connection-Status (grün = ok, orange = keine Verbindung).
 Bei Verbindungsverlust versucht die Applikation automatisch wieder Kontakt zum Broker herzustellen.
 
-**Info**: Aufgrund von Stabilitätsproblemen wurde der Ultraschall-Distanzsensor, der Drucksensor und der Servomotor deaktiviert.
-
 ## Konfiguration
 
 Die Konfiguration für die Applikation liegt auf dem Filesystem der EV3 Roboter unter **/home/robot/roborinth/config/config.json**. 
@@ -33,6 +31,7 @@ Die Notifikationsperiode beträgt standardmässig 1 Sekunde.
  
 **Achtung:** Der ev3 ist nicht besonders leistungsfähig. Bei zuvielen, gleichzeitigen Notifikations-Subscriptions und zu kurzer Notifikationsperiode kann die Applikation instabil werden. 
 
+**Info**: Aufgrund von Stabilitätsproblemen sind Ultraschall-Distanzsensor, Drucksensor und Servomotor zur Zeit deaktiviert. Diese Devices werden für die Challenge aber vermutlich nicht benötigt.
 
 ### Requests and Responses
 
