@@ -12,7 +12,6 @@ The goal is to examine a labyrinth of lines with multiple (2-3) robots, find an 
 ## Challenge Environment and Conditions
 
 - 2-3 Lego Mindstorm robots
-    - They come with 
     - Actors (motors)
     - Sensors (brightness sensor, gyroscope, …)
     - ev3dev OS to run any code on the robot
