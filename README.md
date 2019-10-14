@@ -1,22 +1,25 @@
 # roboRinth – Collaborative Robot Challenge
 
-## Project description
+## Project Description
 
 The goal is to examine a labyrinth of lines with multiple (2-3) robots, find an optimal path from start to finish and possibly collect tokens within the labyrinth
 
-### Setup
+## :fire:Starting Point:fire:
+- Plug & Play Network infrastructure: [Details details](infrastructure/readme.md)
+- preconfigured MQTT Broker running on Raspberry Pi: [Details here](mosquitto/readme.md)
+- 3 preconfigured Lego Mindstorm Robots: [Details here](ev3/readme.md)
+
+## Challenge Environment and Conditions
+
 - 2-3 Lego Mindstorm robots
-    - They come with [preinstalled MQTT client application](ev3/readme.md)
+    - They come with 
     - Actors (motors)
     - Sensors (brightness sensor, gyroscope, …)
     - ev3dev OS to run any code on the robot
     - MQTT client
     - WiFi dongle to communicate with server
 - Raspberry Pi / PC as server
-    - preconfigured as MQTT broker. [Details here](mosquitto/readme.md)
 - Raspberry Pi's / PC's as MQTT clients
-
-The network infrastructure is preconfigured. [Have a look at the details](infrastructure/readme.md)
 
 <img src="roboRinth_Project_Setup.png" alt="Setup" width="400"/>
 
@@ -37,3 +40,4 @@ The network infrastructure is preconfigured. [Have a look at the details](infras
 ### Requirements to PC
 - possibly Docker
 - possibly VirtualBox
+
