@@ -1,8 +1,8 @@
 # EV3 - RoboRinth App
-Nach dem Bootvorgang wird automatisch eine RoboRinth Applikation gestartet. Die App verbindet sich mit einem MQTT Broker und stellt ein MQTT Interface zur Verfügung zum Lesen und Schreiben von Devices die am ev3 angeschlossen sind.
-Die angeschlossenen Devices werden beim Applikationsstart automatisch detektiert und initialisiert. Es ist wichtig das Sensoren an den Input-Ports (markiert mit 1-4) und Aktoren an den Output-Ports (markiert mit A-D) angeschlossen werden. 
+Nach dem Bootvorgang wird automatisch eine RoboRinth Applikation gestartet. Die App verbindet sich mit einem MQTT Broker und stellt ein MQTT Interface zur Verfügung zum Lesen und Schreiben von Devices die am ev3 angeschlossen sind, z.B. ColorSensor und Motoren.
+Die angeschlossenen Devices werden beim Applikationsstart automatisch detektiert und initialisiert. Es ist nur wichtig, dass Sensoren an den Input-Ports (markiert mit 1-4) und Aktoren an den Output-Ports (markiert mit A-D) angeschlossen werden. 
 Auf dem Screen des ev3 wird die Roboter-ID sowie der Connection-Status angezeigt. Zudem signalisieren die LEDs den Connection-Status (grün = ok, orange = keine Verbindung).
-Bei Verbindungsverlust versucht die Applikation automatisch wieder Kontakt zum Host herzustellen.
+Bei Verbindungsverlust versucht die Applikation automatisch wieder Kontakt zum Broker herzustellen.
 
 **Info**: Aufgrund von Stabilitätsproblemen wurde der Ultraschall-Distanzsensor, der Drucksensor und der Servomotor deaktiviert.
 
@@ -15,7 +15,7 @@ Unter anderem kann dort die IP Adresse des MQTT Hosts angepasst werden.
 
 [IP Adressen der Roboter](../infrastructure/readme.md)
 
-## Deployment
+## Weiterentwicklung & Deployment
 Die vorkonfigurierte Python Applikation oder sonst eine Python/Java Applikation kann auf dem Host entwickelt werden und anschliessend z.B. mittels WinSCP aufs target deployed werden. Der systemd service **roborinth** startet die Applikation nach dem Bootvorgang automatisch.
 Für eine C/C++ Anwendung gibt es zur Zeit keine Cross-Compilation Toolchain. Man müsste in diesem Fall auf dem Target kompilieren.
 
@@ -25,13 +25,13 @@ Jeder Roboter sendet und empfängt Nachrichten unter einem speziellen **Root-Top
 D.h. Der Roboter mit der ID `robo-01` sendet und empfängt nur Nachrichten unter dem Topic `robo-01/...`
 
 Über MQTT können folgende Typen von Nachrichten gesendet werden:
- - Clients können **requests** publishen, welche vom Roboter ausgeführt werden, das Resultat wird als **response** gepublished
+ - Clients können **requests** publishen, welche vom Roboter verarbeitet werden, das Resultat wird als **response** gepublished
  - Clients können mit **subscribe** und **unsubscribe**  Notifikationen aktivieren/deaktivieren
  - **notification** Nachrichten werden mit einer einstellbaren Periode vom Roboter gepublished
 
-Die Notifikationsperiode beträgt standarmässig 1 Sekunde.
+Die Notifikationsperiode beträgt standardmässig 1 Sekunde.
  
-**Achtung:** Der ev3 ist nicht besonders leistungsfähig. Bei zuvielen Notifikations-subscriptions gleichzeitig und zu kurzer Notifikationsperiode kann die Applikation instabil werden.
+**Achtung:** Der ev3 ist nicht besonders leistungsfähig. Bei zuvielen, gleichzeitigen Notifikations-Subscriptions und zu kurzer Notifikationsperiode kann die Applikation instabil werden. 
 
 
 ### Requests and Responses
@@ -54,16 +54,16 @@ Note:
 |`request/ultrasonic/distance`|-                                        |see response|
 |`request/gyro/present`       |-                                        |see response|
 |`request/gyro/angle`         |-                                        |see response|
-|`request/gyro/reset`         |-                                        |see response|
+|`request/gyro/reset`         |-                                        |reset angle to 0<br>the response returns immediately<br> but it takes a few seconds until the angle is set to 0|
 |`request/motor/present`      |-                                        |see response|
 |`request/motor/position`     |-                                        |see response|
 |`request/motor/reset`        |-                                        |see response|
 |`request/motor/turn`         |`{"speed":"x","angle":"y"}`              |`-100 <= x <= 100`<br> `y has to be an int`|
 |`request/motor/activate`     |`int`                                    |speed value from -100 to 100|
 |`request/steering/present`   |-                                        |see response|
-|`request/steering/activate`  |`{"speed":"x","steering":"y"}`           |see [MoveSteering](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/motors.html#move-steering)|
-|`request/steering/reset`     |-                                        |see response
-|`request/steering/turn`      |`{"speed":"x","steering":"y","angle":z"}`|[MoveSteering](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/motors.html#move-steering)|
+|`request/steering/activate`  |`{"speed":"x","steering":"y"}`           |start moving the robot with given speed and steering value<br>speed goes from -100 to 100<br>steering value impacts the radius<br>the value goes from -100 to 100<br> where as 0 means "straight line" and -100/100 "turn on point"<br>see [MoveSteering](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/motors.html#move-steering)|
+|`request/steering/reset`     |-                                        |reset steering releases "brakes" which are set after requesting "turn"|
+|`request/steering/turn`      |`{"speed":"x","steering":"y","angle":z"}`|turn the robot with given speed, steering, and angle.<br>the angle refers to the outer wheel in degrees<br>[MoveSteering](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/motors.html#move-steering)|
 |`request/power/voltage`      |-                                        |see response|
 |`request/power/current`      |-                                        |see response|
 |`request/notper`             |`int`                                    |set notification period in milliseconds<br>value must be between 10 and 10000<br>default is 1000|
@@ -85,21 +85,21 @@ Note:
 |`response/ultrasonic/distance`|`decimal`      |read distance in centimeter (0.0-255.0)|
 |`response/gyro/present`       |`bool`         |returns `True` if [GyroSensor](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/sensors.html#gyro-sensor) is present<br>in case of `False` gyro topics return **invalid** values|
 |`response/gyro/angle`         |`int`          |read angle in degrees<br> clockwise turn --> positive angle<br>counterclockwise turn --> negative angle<br>angle has no boundaries may be <-360 or >360|
-|`response/gyro/reset`         |`bool`         |reset angle to 0|
+|`response/gyro/reset`         |`bool`         |`True` if request was successful|
 |`response/motor/present`      |`bool`         |returns `True` if MediumMotor is present<br>in case of `False` motor topics return **invalid** values|
-|`response/motor/position`     |`int`          |read position of MediumMotor in degrees (Motor may be used as sensor)|
-|`response/motor/reset`        |`bool`         |reset position to 0|
-|`response/motor/turn`         |`bool`         |turn MediumMotor with given speed to given angle in degrees<br>angle is relative<br>speed goes from -100 to 100|
-|`response/motor/activate`     |`bool`         |set speed value to MediumMotor<br>speed goes from -100 to 100|
+|`response/motor/position`     |`int`          |return position of MediumMotor in degrees (Motor may be used as sensor)|
+|`response/motor/reset`        |`bool`         |`True` if request was successful|
+|`response/motor/turn`         |`bool`         |`True` if request was successful|
+|`response/motor/activate`     |`bool`         |`True` if request was successful|
 |`response/steering/present`   |`bool`         |returns `True` if [MoveSteering](https://python-ev3dev.readthedocs.io/en/ev3dev-stretch/motors.html#move-steering) is present<br>in case of `False` steering topics return  **invalid** values|
-|`response/steering/activate`  |`bool`         |start moving the robot with given speed and steering value<br>speed goes from -100 to 100<br>steering value impacts the radius<br>the value goes from -100 to 100<br> where as 0 means "straight line" and -100/100 "turn on point"|
-|`response/steering/reset`     |`bool`         |reset steering releases "brakes" which are set after requesting "turn"|
-|`response/steering/turn`      |`bool`         |turn the robot with given speed, steering, and angle.<br>the angle refers to the outer wheel in degrees|
+|`response/steering/activate`  |`bool`         |`True` if request was successful|
+|`response/steering/reset`     |`bool`         |`True` if request was successful|
+|`response/steering/turn`      |`bool`         |`True` if request was successful|
 |`response/power/voltage`      |`decimal`      |returns battery pack voltage in Volts|
 |`response/power/current`      |`decimal`      |returns current draw in MilliAmps|
 |`response/notper`             |`bool`         |`True` if request was successful<br>**to low value leads to system instability**
-|`response/ctrl`               |`bool`         |Command for debug purpose |
-|`response/txt`                |`bool`         |Displays Text on ev3 Screen (debug)|
+|`response/ctrl`               |`bool`         |`True` if request was successful|
+|`response/txt`                |`bool`         |`True` if request was successful|
 
 ### Notifications
 
@@ -132,6 +132,7 @@ for detailed info on notification data see request/response descriptions
 #### subscribe
 
 Enable notifications by publishing one or more of the following messages.
+
 **Attention:** To many subscriptions can lead to system instability.
 
 |Topic                            |Request-Data |
