@@ -15,13 +15,13 @@ _defaultPort=1883
 client = mqtt.Client(client_id="testClient", clean_session=True)
 
 def onConnect(client, userdata, flags, rc):
-  logger.info("Connected with result code " + str(rc))
+  logger.debug("Connected with result code " + str(rc))
 
 def onMessage(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
+    logger.debug("Recievied message" + msg.topic + " " + str(msg.payload))
 
 def _initClient(host, port):
-  logger.info("Init client, host: " + str(host) + "; port: " + str(port))
   client.on_connect = onConnect
   client.onMessage = onMessage
   keepalive = 60
@@ -45,7 +45,7 @@ def main(argv):
 
   host = _defaultHost
   port = _defaultPort
-  loglevel = "INFO"
+  loglevel = "DEBUG"
 
   # Readout arguments
   try:
@@ -70,7 +70,7 @@ def main(argv):
       loglevel = arg
 
   _initializeLogging(loglevel)
-  logger.info("Main started")
+  logger.debug("Main started")
 
   # Setup mqtt client
   _initClient(host, port)
@@ -83,7 +83,7 @@ def main(argv):
   client.loop_stop()
   client.disconnect()
 
-  logger.info("Terminate")
+  logger.debug("Terminate")
 
 if __name__ == '__main__':
   main(sys.argv[1:])
