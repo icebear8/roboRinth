@@ -2,35 +2,14 @@
 
 import getopt
 import logging
-import random
 import sys
 import time
 
-import paho.mqtt.client as mqtt
+from MqttClient import MqttClient
 
-logger = logging.getLogger("MQTTapp")
-
-_defaultHost="localhost"
-_defaultPort=1883
+logger = logging.getLogger(__name__)
 
 client = None
-
-def onConnect(client, userdata, flags, rc):
-  logger.debug("Connected with result code " + str(rc))
-
-def onMessage(client, userdata, msg):
-  logger.debug("Recievied message" + msg.topic + " " + str(msg.payload))
-
-def _initClient(host, port, clientId):
-  global client
-
-  logger.debug("Init client, host: " + str(host) + "; port: " + str(port) + "; clientId: " + clientId)
-
-  client = mqtt.Client(client_id=clientId, clean_session=True)
-  client.on_connect = onConnect
-  client.onMessage = onMessage
-  keepalive = 60
-  client.connect(host, port, keepalive)
 
 def _initializeLogging(loglevel):
   numeric_level = getattr(logging, loglevel.upper(), None)
@@ -49,10 +28,10 @@ def _printUsage():
 
 def main(argv):
 
-  host = _defaultHost
-  port = _defaultPort
+  host = "localhost"
+  port = 1883
   loglevel = "DEBUG"
-  clientId = "mqttapp_" + str(random.randint(1, sys.maxsize))
+  clientId = None
 
   # Readout arguments
   try:
@@ -80,15 +59,14 @@ def main(argv):
   logger.debug("Main started")
 
   # Setup mqtt client
-  _initClient(host, port, clientId)
-  client.loop_start()
+  client = MqttClient(host, port, clientId)
+  client.startAsync()
   time.sleep(2)
 
   input("Press Enter to abort...")
 
   # Terminate
-  client.loop_stop()
-  client.disconnect()
+  client.stop()
 
   logger.debug("Terminate")
 
