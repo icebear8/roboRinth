@@ -63,7 +63,7 @@ def main(argv):
   client.startAsync()
   time.sleep(2)
 
-  input("Press Enter to abort...")
+  input("\n\nPress Enter to abort...\n\n")
 
   # Terminate
   client.stop()

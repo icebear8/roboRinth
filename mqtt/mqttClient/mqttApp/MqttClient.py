@@ -5,10 +5,21 @@ import sys
 
 import paho.mqtt.client as mqtt
 
+import Handlers as handler
+
 logger = logging.getLogger(__name__)
 
 _defaultHost="localhost"
 _defaultPort=1883
+
+mqttSubscriptions = [
+  "robo-01/notification/#",
+]
+
+mqttSubscriptionHandlers = {
+  "robo-01/notification/color/#":   handler.handleColor,
+  "robo-01/notification/gyro/#":    handler.handleGyro,
+}
 
 class MqttClient:
   def __init__(self, host=_defaultHost, port=_defaultPort, clientId=None):
@@ -23,6 +34,9 @@ class MqttClient:
 
     self._client = mqtt.Client(client_id=clientId, clean_session=True)
     self._client.on_connect = self._onConnect
+    self._client.on_subscribe = self._onSubscribe
+    self._client.on_unsubscribe = self._onUnsubscribe
+    self._client.on_disconnect = self._onDisconnect
     self._client.on_message = self._onMessage
 
   def startAsync(self):
@@ -33,8 +47,33 @@ class MqttClient:
     self._client.loop_stop();
     self._client.disconnect()
 
+  def _subscribeTopics(self, topics):
+    for topic in topics:
+      self._client.subscribe(topic)
+
+  def _setupMessageHandler(self, handlers):
+    for handler in handlers:
+      self._client.message_callback_add(handler, handlers[handler])
+
+  def _setupNotifications(self):
+    client.publish("robo-01/subscribe/color/name")
+    client.publish("robo-01/subscribe/gyro/angle")
+
   def _onConnect(self, client, userdata, flags, rc):
     logger.debug("Connected with result code " + str(rc))
+    self._subscribeTopics(mqttSubscriptions)
+    self._setupMessageHandler(mqttSubscriptionHandlers)
+    self._setupNotifications()
+
+  def _onDisconnect(self, client, userdata, rc):
+    if rc != 0:
+      logger.warn("Unexpected disconnection")
+
+  def _onSubscribe(self, client, userdata, mid, granted_qos):
+    logger.debug("Subscribed " + str(mid))
+
+  def _onUnsubscribe(self, client, userdata, mid, granted_qos):
+    logger.debug("Unsubscribed " + str(mid))
 
   def _onMessage(self, client, userdata, msg):
-    logger.debug("Recievied message" + msg.topic + " " + str(msg.payload))
+    logger.debug("Unhandled message: " + msg.topic + " " + str(msg.payload))
