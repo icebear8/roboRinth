@@ -19,7 +19,7 @@ def onConnect(client, userdata, flags, rc):
   logger.debug("Connected with result code " + str(rc))
 
 def onMessage(client, userdata, msg):
-    logger.debug("Recievied message" + msg.topic + " " + str(msg.payload))
+  logger.debug("Recievied message" + msg.topic + " " + str(msg.payload))
 
 def _initClient(host, port, clientId):
   global client
