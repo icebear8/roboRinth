@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 
+import getopt
 import logging
 import sys
 import time
 
 import paho.mqtt.client as mqtt
 
-logger = logging.getLogger(__name__)
-client = mqtt.Client()
+logger = logging.getLogger("MQTTapp")
 
+_defaultHost="mqtt.arctic"
+_defaultPort=1883
+
+client = mqtt.Client(client_id="testClient", clean_session=True)
 def onConnect(client, userdata, flags, rc):
   logger.info("Connected with result code " + str(rc))
 
@@ -20,21 +24,50 @@ def _initClient(host, port):
 def _clientLoop():
   client.loop_start()
 
-if __name__ == '__main__':
-  logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p', level=logging.INFO)
+  logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=numeric_level)
+  logging.Formatter.converter = time.gmtime
+
+def _printUsage():
+  print('mqttapp.py [--host=, --port=, --log=]')
+  print('--host=: Host name or IP to connect')
+  print('--port=: Port to connect')
+  print('--log=: Loglevel [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
+
+def main(argv):
+
+  host = _defaultHost
+  port = _defaultPort
+  loglevel = "INFO"
+
+  # Readout arguments
+  try:
+    opts, args = getopt.getopt(argv, "h", ["help", "host=", "port=", "log="])
+  except getopt.GetoptError as err:
+    print(err)  # will print something like "option -a not recognized"
+    _printUsage()
+    sys.exit(2)
+
+  for opt, arg in opts:
+    if opt in ('-h', '--help'):
+      _printUsage()
+      sys.exit()
+    elif opt in ('--host'):
+      host = arg
+    elif opt in ('--port'):
+      try:
+        port = int(arg)
+      except ValueError:
+        pass
+    elif opt in ('--log='):
+      loglevel = arg
+
   logger.info("Main started")
 
-  host="localhost"
-  port=1883
-
-  if len(sys.argv) >= 2:
-    host=sys.argv[1]
-
-  if len(sys.argv) >= 3:
-    try:
-      port = int(sys.argv[2])
-    except ValueError:
-      pass    # Nothing to do
-
+  # Setup mqtt client
   _initClient(host, port)
-  _clientLoop()
+  client.loop_start()
+
+  logger.info("Terminate")
+
+if __name__ == '__main__':
+  main(sys.argv[1:])
