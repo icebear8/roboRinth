@@ -9,7 +9,8 @@ ARG UID=1000
 ARG GID=1000
 
 # Environment variables for the service
-ENV SERVICE_ARGS=
+ENV SERVICE_ARGS="localhost 1883"
+ENV APP_DIR=/opt/mqttclient
 
 RUN apk update && apk add --no-cache \
   python3 \
@@ -21,6 +22,11 @@ RUN pip3 install paho-mqtt
 RUN addgroup -g ${GID} ${GROUP} \
   && adduser -u ${UID} -G ${GROUP} -D ${USER}
 
+COPY ./mqttApp ${APP_DIR}/
+
+RUN chown -R ${USER} ${APP_DIR}
+
 USER ${USER}
 
 ENTRYPOINT ["sh", "-c"]
+CMD ["python3 ${APP_DIR}/mqttapp.py ${SERVICE_ARGS}"]
