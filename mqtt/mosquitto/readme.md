@@ -28,6 +28,12 @@ Docker images for the Raspberry Pi are tagged with `-arm`.
 * Installation on Raspberry Pi: https://rancher.com/docs/os/v1.x/en/installation/running-rancheros/server/raspberry-pi/
   * Initial user is `rancher` and  password is `rancher`
 
+#### Git and RancherOS
+Rancher OS only allows to run applications in containers.
+For using git in rancher OS an alias could be used.
+Put the following line into the profile (`~/.profile`):
+`alias git='docker run --rm -v $(pwd):/opt/repo icebear8/git:latest-arm'`
+
 ### BalenaOS
 As an alternative to RancherOS, [BalenaOS](https://www.balena.io/os/) can be used instead.
 BalenaOS comes with an additional framework to manage and deploy Docker containers.

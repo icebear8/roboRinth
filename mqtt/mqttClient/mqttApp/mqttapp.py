@@ -1,40 +1,74 @@
 #!/usr/bin/env python
 
+import getopt
 import logging
 import sys
 import time
 
-import paho.mqtt.client as mqtt
+from MqttClient import MqttClient
 
 logger = logging.getLogger(__name__)
-client = mqtt.Client()
 
-def onConnect(client, userdata, flags, rc):
-  logger.info("Connected with result code " + str(rc))
+client = None
 
-def _initClient(host, port):
-  logger.info("Init client, host: " + host + "; port: " + port)
-  client.on_connect = onConnect
-  client.connect(host, port, 60)
+def _initializeLogging(loglevel):
+  numeric_level = getattr(logging, loglevel.upper(), None)
+  if not isinstance(numeric_level, int):
+    numeric_level = getattr(logging, INFO, None)
 
-def _clientLoop():
-  client.loop_start()
+  logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=numeric_level)
+  logging.Formatter.converter = time.gmtime
+
+def _printUsage():
+  print('mqttapp.py [--host=, --port=, --log=]')
+  print('--host=: Host name or IP to connect')
+  print('--port=: Port to connect')
+  print('--clientId=: MQTT client connection id')
+  print('--log=: Loglevel [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
+
+def main(argv):
+
+  host = "localhost"
+  port = 1883
+  loglevel = "DEBUG"
+  clientId = None
+
+  # Readout arguments
+  try:
+    opts, args = getopt.getopt(argv, "h", ["help", "host=", "port=", "clientId=", "log="])
+  except getopt.GetoptError as err:
+    print(err)  # will print something like "option -a not recognized"
+    _printUsage()
+    sys.exit(2)
+
+  for opt, arg in opts:
+    if opt in ('-h', '--help'):
+      _printUsage()
+      sys.exit()
+    elif opt in ('--host'):
+      host = arg
+    elif opt in ('--port'):
+      try:
+        port = int(arg)
+      except ValueError:
+        pass
+    elif opt in ('--log='):
+      loglevel = arg
+
+  _initializeLogging(loglevel)
+  logger.debug("Main started")
+
+  # Setup mqtt client
+  client = MqttClient(host, port, clientId)
+  client.startAsync()
+  time.sleep(2)
+
+  input("Press Enter to abort...")
+
+  # Terminate
+  client.stop()
+
+  logger.debug("Terminate")
 
 if __name__ == '__main__':
-  logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p', level=logging.INFO)
-  logger.info("Main started")
-
-  host="localhost"
-  port=1883
-
-  if len(sys.argv) >= 2:
-    host=sys.argv[1]
-
-  if len(sys.argv) >= 3:
-    try:
-      port = int(sys.argv[2])
-    except ValueError:
-      pass    # Nothing to do
-
-  _initClient(host, port)
-  _clientLoop()
+  main(sys.argv[1:])
