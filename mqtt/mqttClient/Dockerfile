@@ -9,7 +9,7 @@ ARG UID=1000
 ARG GID=1000
 
 # Environment variables for the service
-ENV SERVICE_ARGS="localhost 1883"
+ENV SERVICE_ARGS="--host=localhost --port=1883"
 ENV APP_DIR=/opt/mqttclient
 
 RUN apk update && apk add --no-cache \
