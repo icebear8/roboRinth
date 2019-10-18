@@ -2,6 +2,7 @@
 
 import getopt
 import logging
+import random
 import sys
 import time
 
@@ -9,19 +10,23 @@ import paho.mqtt.client as mqtt
 
 logger = logging.getLogger("MQTTapp")
 
-_defaultHost="mqtt.arctic"
+_defaultHost="localhost"
 _defaultPort=1883
 
-client = mqtt.Client(client_id="testClient", clean_session=True)
+client = None
 
 def onConnect(client, userdata, flags, rc):
   logger.debug("Connected with result code " + str(rc))
 
 def onMessage(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
     logger.debug("Recievied message" + msg.topic + " " + str(msg.payload))
 
-def _initClient(host, port):
+def _initClient(host, port, clientId):
+  global client
+
+  logger.debug("Init client, host: " + str(host) + "; port: " + str(port) + "; clientId: " + clientId)
+
+  client = mqtt.Client(client_id=clientId, clean_session=True)
   client.on_connect = onConnect
   client.onMessage = onMessage
   keepalive = 60
@@ -39,6 +44,7 @@ def _printUsage():
   print('mqttapp.py [--host=, --port=, --log=]')
   print('--host=: Host name or IP to connect')
   print('--port=: Port to connect')
+  print('--clientId=: MQTT client connection id')
   print('--log=: Loglevel [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
 
 def main(argv):
@@ -46,10 +52,11 @@ def main(argv):
   host = _defaultHost
   port = _defaultPort
   loglevel = "DEBUG"
+  clientId = "mqttapp_" + str(random.randint(1, sys.maxsize))
 
   # Readout arguments
   try:
-    opts, args = getopt.getopt(argv, "h", ["help", "host=", "port=", "log="])
+    opts, args = getopt.getopt(argv, "h", ["help", "host=", "port=", "clientId=", "log="])
   except getopt.GetoptError as err:
     print(err)  # will print something like "option -a not recognized"
     _printUsage()
@@ -73,7 +80,7 @@ def main(argv):
   logger.debug("Main started")
 
   # Setup mqtt client
-  _initClient(host, port)
+  _initClient(host, port, clientId)
   client.loop_start()
   time.sleep(2)
 
