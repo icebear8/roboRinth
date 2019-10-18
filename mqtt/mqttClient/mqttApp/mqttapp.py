@@ -21,8 +21,10 @@ def _initClient(host, port):
   client.on_connect = onConnect
   client.connect(host, port, 60)
 
-def _clientLoop():
-  client.loop_start()
+def _initializeLogging(loglevel):
+  numeric_level = getattr(logging, loglevel.upper(), None)
+  if not isinstance(numeric_level, int):
+    numeric_level = getattr(logging, INFO, None)
 
   logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=numeric_level)
   logging.Formatter.converter = time.gmtime
@@ -61,6 +63,7 @@ def main(argv):
     elif opt in ('--log='):
       loglevel = arg
 
+  _initializeLogging(loglevel)
   logger.info("Main started")
 
   # Setup mqtt client
