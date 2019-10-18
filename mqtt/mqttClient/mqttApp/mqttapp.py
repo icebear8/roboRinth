@@ -13,13 +13,19 @@ _defaultHost="mqtt.arctic"
 _defaultPort=1883
 
 client = mqtt.Client(client_id="testClient", clean_session=True)
+
 def onConnect(client, userdata, flags, rc):
   logger.info("Connected with result code " + str(rc))
 
+def onMessage(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
+
 def _initClient(host, port):
-  logger.info("Init client, host: " + host + "; port: " + port)
+  logger.info("Init client, host: " + str(host) + "; port: " + str(port))
   client.on_connect = onConnect
-  client.connect(host, port, 60)
+  client.onMessage = onMessage
+  keepalive = 60
+  client.connect(host, port, keepalive)
 
 def _initializeLogging(loglevel):
   numeric_level = getattr(logging, loglevel.upper(), None)
@@ -69,6 +75,13 @@ def main(argv):
   # Setup mqtt client
   _initClient(host, port)
   client.loop_start()
+  time.sleep(2)
+
+  input("Press Enter to abort...")
+
+  # Terminate
+  client.loop_stop()
+  client.disconnect()
 
   logger.info("Terminate")
 
