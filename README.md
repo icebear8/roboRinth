@@ -6,7 +6,9 @@ The goal is to examine a labyrinth of lines with multiple (2-3) robots, find an 
 
 ## :fire:Starting Point:fire:
 - Plug & Play Network infrastructure: [Details details](infrastructure/readme.md)
-- preconfigured MQTT Broker running on Raspberry Pi: [Details here](mosquitto/readme.md)
+- preconfigured MQTT Broker running on Raspberry Pi: [Details here](mqtt/mosquitto/readme.md)
+- MQTT Client Application: [Details here](mqtt/mqttClient/readme.md)
+- MQTT Spy:  [Details here](mqtt/mqttSpy)
 - 3 preconfigured Lego Mindstorm Robots: [Details here](ev3/readme.md)
 
 ## Challenge Environment and Conditions
