@@ -1,4 +1,4 @@
-# roboRinth – Collaborative Robot Challenge
+# roboRinth – Collaborative Robot Challenge 🤖
 
 ## Project Description
 
