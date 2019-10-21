@@ -1,6 +1,6 @@
 import logging
 
-from Common import *
+from .Common import *
 
 logger = logging.getLogger(__name__)
 
@@ -13,18 +13,18 @@ class RoboDriver:
     self.onStatus=None
     self.onDirections=None
     self.onColors=None
-    self._discoverMode=false
+    self._discoverMode=False
     self._status=RoboStatus.IDLE
 
-  def driveDirection(direction=RoboDirection.NORTH):
-    logger.debug("driveDirection: " str(direction))
+  def driveDirection(self, direction=RoboDirection.NORTH):
+    logger.debug("driveDirection: " + str(direction))
 
-  def discoverMode(enabled=false):
+  def discoverMode(self, enabled=False):
     self._discoverMode=enabled
-    logger.debug("discoverMode: " str(delf._discoverMode))
+    logger.debug("discoverMode: " + str(self._discoverMode))
 
-  def getDiscoverMode():
+  def getDiscoverMode(self):
     return self._discoverMode
 
-  def getStatus():
+  def getStatus(self):
     return self._status
