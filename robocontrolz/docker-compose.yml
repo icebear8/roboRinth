@@ -1,0 +1,8 @@
+version: '3'
+services:
+  mqttClient:
+    build: .
+    image: icebear8/mqttclient:build
+    container_name: mqttclient
+    env_file:
+      - ./config/default.env
