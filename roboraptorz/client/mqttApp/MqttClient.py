@@ -13,12 +13,12 @@ _defaultHost="localhost"
 _defaultPort=1883
 
 mqttSubscriptions = [
-  "robo-01/notification/#",
+  "robo-03/notification/#",
 ]
 
 mqttSubscriptionHandlers = {
-  "robo-01/notification/color/#":   handler.handleColor,
-  "robo-01/notification/gyro/#":    handler.handleGyro,
+  "robo-03/notification/color/#":   handler.handleColor,
+  "robo-03/notification/gyro/#":    handler.handleGyro,
 }
 
 class MqttClient:
@@ -47,11 +47,17 @@ class MqttClient:
     self._client.loop_stop();
     self._client.disconnect()
 
-  def _subscribeTopics(self, topics):
+
+
+  def publish(self, a_topic, a_payload):
+    self._client.publish(topic=a_topic,payload=a_payload)
+
+
+  def subscribeTopics(self, topics):
     for topic in topics:
       self._client.subscribe(topic)
 
-  def _setupMessageHandler(self, handlers):
+  def addMessageHandler(self, handlers):
     for handler in handlers:
       self._client.message_callback_add(handler, handlers[handler])
 
@@ -61,8 +67,8 @@ class MqttClient:
 
   def _onConnect(self, client, userdata, flags, rc):
     logger.debug("Connected with result code " + str(rc))
-    self._subscribeTopics(mqttSubscriptions)
-    self._setupMessageHandler(mqttSubscriptionHandlers)
+    self.subscribeTopics(mqttSubscriptions)
+    self.addMessageHandler(mqttSubscriptionHandlers)
     self._setupNotifications()
 
   def _onDisconnect(self, client, userdata, rc):

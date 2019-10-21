@@ -29,3 +29,25 @@ class RoboDriver:
 
   def getStatus(self):
     return self._status
+
+
+  # is called on mqtt Notifiction
+  def mqtt_availDirection(self, client, user, msg):
+
+
+  def mqtt_crossingReached(self):
+    if self._discoverMode = True;
+      # TODO: Discover dierction
+    else:
+
+  def mqtt_busy(self):
+    self._status
+
+  def getMqttHandlerList(self):
+    subscriberDict = {
+      self._topicPrefix + "/notification/availableDirections/#": self.mqtt_availDirection,
+      self._topicPrefix + "/notification/crossingReached/#": self.mqtt_crossingReached,
+      self._topicPrefix + "/notification/busy/#": self.mqtt_busy
+    }
+    return subscriberDict
+
