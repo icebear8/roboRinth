@@ -1,7 +1,7 @@
 import logging
 
-from .Common import *
-from .Map import *
+from Common import *
+from Map import *
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,8 @@ class MapMatcher:
         map = self.roboMaps[robotId]
         currentPosition = map.getRobotLocation()
         for direction in availableDirections:
-            dx, dy = 0
+            dx = 0
+            dy = 0
             if direction == RoboDirection.NORTH:
                 dx = 0
                 dy = 1
@@ -34,6 +35,3 @@ class MapMatcher:
                 dy = 0
             relativeDirection = RelativeDirection(dx, dy)
             map.addMapPoint((currentPosition, relativeDirection))
-
-
-
