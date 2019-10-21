@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Set, List
+from typing import Set
 
 
 class Direction(Enum):
@@ -14,11 +14,20 @@ class Position:
         self.x = x
         self.y = y
 
+    def __hash__(self):
+        return hash((self.x, self.y))
+
+    def __eq__(self, other):
+        return (self.x, self.y) == (other.x, other.y)
+
+    def __add__(self, other):
+        return Position(self.x + other.x, self.y + other.y)
+
 
 class Node:
-    def __init__(self, position: Position, visited: bool):
+    def __init__(self, position: Position):
         self.position = position
-        self.visited = visited
+        self.visited = False
 
 
 class Edge:
@@ -26,22 +35,60 @@ class Edge:
         self.node1 = node1
         self.node2 = node2
 
+    def __hash__(self):
+        return hash({self.node1, self.node2})
+
+    def __eq__(self, other):
+        return {self.node1, self.node2} == {other.node1, other.node2}
+
 
 class Map:
     def __init__(self):
-        pass
+        self.nodes = dict()
+        self.edges = set()
 
     def node_discovered(self, position: Position, available_directions: Set[Direction]):
-        pass
+        node = self.get_node(position)
+        node.visited = True
 
-    def get_node(self, position: Position) -> Node:
-        pass
+        for direction in available_directions:
+            self.edges.add(self.__create_edge(position, direction))
 
     def get_available_directions(self, position: Position) -> Set[Direction]:
-        pass
+        result = set()
+        for direction in Direction:
+            if self.__create_edge(position, direction) in self.edges:
+                result.add(direction)
+        return result
 
-    def get_new_directions(self, position: Position) -> Set[Direction]:
-        pass
+    def get_unvisited_directions(self, position: Position) -> Set[Direction]:
+        result = set()
+        for direction in Direction:
+            if self.get_node(self.__pos_in_direction(position, direction)).visited:
+                continue
+            if self.__create_edge(position, direction) in self.edges:
+                result.add(direction)
+        return result
 
-    def get_all_edges(self) -> List[Edge]:
-        pass
+    def get_node(self, position: Position) -> Node:
+        if position not in self.nodes:
+            self.nodes[position] = Node(position)
+        return self.nodes[position]
+
+    def get_all_edges(self) -> Set[Edge]:
+        return self.edges
+
+    def __create_edge(self, position: Position, direction: Direction):
+        node1 = self.get_node(position)
+        node2 = self.get_node(self.__pos_in_direction(position, direction))
+        return Edge(node1, node2)
+
+    @staticmethod
+    def __pos_in_direction(position: Position, direction: Direction, distance: int = 1) -> Position:
+        offsets = {
+            Direction.NORTH: Position(0, distance),
+            Direction.EAST: Position(distance, 0),
+            Direction.SOUTH: Position(0, -distance),
+            Direction.WEST: Position(-distance, 0),
+        }
+        return position + offsets[direction]
