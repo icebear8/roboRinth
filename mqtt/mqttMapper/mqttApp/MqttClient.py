@@ -13,7 +13,8 @@ _defaultHost="localhost"
 _defaultPort=1883
 
 mqttSubscriptions = [
-  "robo-01/notification/#",
+  "+/notification/#",
+  "+/request/#",
 ]
 
 mqttSubscriptionHandlers = {
