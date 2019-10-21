@@ -5,8 +5,10 @@ import logging
 import sys
 import time
 
-from Communication.MqttClient import MqttClient
-from Controller.control import Control
+from MqttClient import MqttClient
+from control import Control
+from map import Map
+from map import Direction
 
 logger = logging.getLogger(__name__)
 
@@ -59,14 +61,19 @@ def main(argv):
   _initializeLogging(loglevel)
   logger.debug("Main started")
 
+  client = MqttClient(host, port, clientId)
+
   # setup Control
-  control = Control("TEST")
+  theMap = Map()
+  control = Control(theMap,client)
+  client.subscribeCrossingReachedCallback(control.onHandleCrossingReached)
+  client.subscribeDiscoveryFinishedCallback(control.onHandleDiscoveryFinished)
+
   # Setup mqtt client
-  client = MqttClient(control,host, port, clientId)
   client.startAsync()
   time.sleep(2)
 
-  client.publishMessageDriveDirection("NORTH")
+  client.publishMessageDriveDirection([Direction.NORTH])
   input("\n\nPress Enter to abort...\n\n")
 
   # Terminate
