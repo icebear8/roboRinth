@@ -7,9 +7,33 @@ import time
 
 from MqttClient import MqttClient
 
+from RoboDriver import *
+from MapMatcher import *
+
 logger = logging.getLogger(__name__)
 
 client = None
+
+def _mqttCallbackSim(driver, client, userdata, msg):
+  logger.debug("_mqttCallbackSim topic: " + str(msg.topic) + " payload: " + str(msg.payload))
+  incomming = msg.payload.decode('utf-8')
+  logger.debug("_mqttCallbackSim incomming: " + incomming)
+
+  directions = []
+
+  if driver.onDirections is not None:
+
+    if incomming in ('north'):
+      directions.append(RoboDirection.NORTH)
+    elif incomming in ('east'):
+      directions.append(RoboDirection.EAST)
+    elif incomming  in ('south'):
+      directions.append(RoboDirection.SOUTH)
+    elif incomming  in ('west'):
+      directions.append(RoboDirection.WEST)
+
+  logger.debug("_mqttCallbackSim directions: " + str(directions))
+  driver.onDirections(directions)
 
 def _initializeLogging(loglevel):
   numeric_level = getattr(logging, loglevel.upper(), None)
@@ -62,6 +86,16 @@ def main(argv):
   client = MqttClient(host, port, clientId)
   client.startAsync()
   time.sleep(2)
+
+  roboDriver = RoboDriver("roboraptorz")
+  mapMatcher = MapMatcher()
+  mapMatcher.registerRobotDriver("roboraptorz", roboDriver)
+
+  callback = lambda client, userdata, msg : _mqttCallbackSim(roboDriver, client, userdata, msg)
+  simHandlers = {
+    "roboraptorz/notification/availableDirections": callback
+  }
+  client.setupMessageHandler(simHandlers)
 
   input("\n\nPress Enter to abort...\n\n")
 
