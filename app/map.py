@@ -34,6 +34,9 @@ class Map:
     def node_discovered(self, position: Position, available_directions: Set[Direction]):
         pass
 
+    def get_node(self, position: Position) -> Node:
+        pass
+
     def get_available_directions(self, position: Position) -> Set[Direction]:
         pass
 
