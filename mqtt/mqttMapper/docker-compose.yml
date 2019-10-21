@@ -1,0 +1,8 @@
+version: '3'
+services:
+  mqttMapper:
+    build: .
+    image: icebear8/mqttmapper:build
+    container_name: mqttmapper
+    env_file:
+      - ./config/default.env
