@@ -1,1 +1,4 @@
 .idea
+mqtt/mqttSpy/mqtt-spy.log
+mqtt/mqttSpy/mqtt-spy.messages
+*.pyc
