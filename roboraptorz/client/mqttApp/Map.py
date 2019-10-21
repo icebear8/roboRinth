@@ -31,17 +31,22 @@ class Map:
         self.pointsOfInteres = {}
 
     def addMapPoint(self,  direction):
-        logger.debug("")
+        p, d = direction
+        logger.debug("setting connection from (" + p.x + "," + p.y + ") to (" + d.x + "," + d.y + ")")
         self.mapPoints.append(direction)
 
     def setRobotLocation(self, point):
+        logger.debug("setting robot location at (" + point.x + ",", + point.y + ")")
         self.pointsOfInteres[self.ROBOT_LOCATION_KEY] = point
 
     def getRobotLocation(self):
         return self.pointsOfInteres[self.ROBOT_LOCATION_KEY]
 
     def setStartPoint(self, point):
+        logger.debug("setting start location at (" + point.x + ",", + point.y + ")")
         self.pointsOfInteres[self.START_POINT_KEY] = point
 
     def setSyncLine(self, direction):
+        p,d = direction
+        logger.debug("setting sync line from (" + p.x + "," + p.y + ") to (" + d.x + "," + d.y + ")")
         self.pointsOfInteres[self.SYNC_LINE_KEY] = direction
