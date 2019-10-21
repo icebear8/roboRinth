@@ -7,3 +7,7 @@ class RoboDirection(Enum):
   EAST = 2
   SOUTH = 3
   WEST = 4
+
+class RoboStatus(Enum):
+  IDLE = 1
+  BUSY = 2

@@ -1,13 +1,30 @@
+import logging
 
+from Common import *
 
+logger = logging.getLogger(__name__)
 
-def driveDirection(direction=North)
-def discoverMode(enabled=true)
+# Supported Robodriver callbacks
+# onStatus(status)
+# onDirections(directions)
+# onColors(directionColor))
+class RoboDriver:
+  def __init__(self):
+    self.onStatus=None
+    self.onDirections=None
+    self.onColors=None
+    self._discoverMode=false
+    self._status=RoboStatus.IDLE
 
+  def driveDirection(direction=RoboDirection.NORTH):
+    logger.debug("driveDirection: " str(direction))
 
-# callback 'onStatus', enum idle, busy
-def getStatus()
+  def discoverMode(enabled=false):
+    self._discoverMode=enabled
+    logger.debug("discoverMode: " str(delf._discoverMode))
 
-# callback
-def onDirections(list of directions, as enum)
-def onColors(list of directions as enum, and colors as string)
+  def getDiscoverMode():
+    return self._discoverMode
+
+  def getStatus():
+    return self._status
