@@ -9,12 +9,14 @@ logger = logging.getLogger(__name__)
 # onDirections(directions)
 # onColors(directionColor))
 class RoboDriver:
-  def __init__(self):
+  def __init__(self, topicPrefix='robo-03'):
     self.onStatus=None
     self.onDirections=None
     self.onColors=None
+
     self._discoverMode=false
     self._status=RoboStatus.IDLE
+    self._topicPrefix=topicPrefix
 
   def driveDirection(direction=RoboDirection.NORTH):
     logger.debug("driveDirection: " str(direction))
