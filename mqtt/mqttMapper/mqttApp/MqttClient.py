@@ -18,8 +18,8 @@ mqttSubscriptions = [
 
 mqttSubscriptionHandlers = {
   "+/notification/availableDirectionsRaw/#":   handler.availableDirectionsRaw,
-  "+/notification/driveDirections/#":    handler.driveDirections,
-  "+/notification/init/#":    handler.init,
+  "+/request/driveDirections/#":    handler.driveDirections,
+  "+/request/init/#":    handler.init,
 }
 
 class MqttClient:
