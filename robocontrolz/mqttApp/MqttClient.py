@@ -6,19 +6,24 @@ import sys
 import paho.mqtt.client as mqtt
 
 import Handlers as handler
+from DirectionController import DirectionController
 
 logger = logging.getLogger(__name__)
+
+dirCtrl = DirectionController()
 
 _defaultHost="localhost"
 _defaultPort=1883
 
 mqttSubscriptions = [
   "robo-01/notification/#",
+  "robo-01/request/discover"
 ]
 
 mqttSubscriptionHandlers = {
   "robo-01/notification/color/#":   handler.handleColor,
   "robo-01/notification/gyro/#":    handler.handleGyro,
+  "robo-01/request/discover":     dirCtrl.discover
 }
 
 class MqttClient:
