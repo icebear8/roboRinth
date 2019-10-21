@@ -14,6 +14,16 @@ class Position:
         self.x = x
         self.y = y
 
+    def new_pos_in_direction(self, direction: Direction, distance: 1) -> 'Position':
+        offsets = {
+            Direction.NORTH: Position(0, -distance),
+            Direction.EAST: Position(distance, 0),
+            Direction.SOUTH: Position(0, distance),
+            Direction.WEST: Position(-distance, 0),
+        }
+        return self + offsets[direction]
+
+
     def __hash__(self):
         return hash((self.x, self.y))
 
@@ -64,7 +74,7 @@ class Map:
     def get_unvisited_directions(self, position: Position) -> Set[Direction]:
         result = set()
         for direction in Direction:
-            if self.get_node(self.__pos_in_direction(position, direction)).visited:
+            if self.get_node(position.new_pos_in_direction(direction, 1)).visited:
                 continue
             if self.__create_edge(position, direction) in self.edges:
                 result.add(direction)
@@ -80,15 +90,5 @@ class Map:
 
     def __create_edge(self, position: Position, direction: Direction):
         node1 = self.get_node(position)
-        node2 = self.get_node(self.__pos_in_direction(position, direction))
+        node2 = self.get_node(position.new_pos_in_direction(direction, 1))
         return Edge(node1, node2)
-
-    @staticmethod
-    def __pos_in_direction(position: Position, direction: Direction, distance: int = 1) -> Position:
-        offsets = {
-            Direction.NORTH: Position(0, distance),
-            Direction.EAST: Position(distance, 0),
-            Direction.SOUTH: Position(0, -distance),
-            Direction.WEST: Position(-distance, 0),
-        }
-        return position + offsets[direction]
