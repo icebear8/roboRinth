@@ -14,6 +14,7 @@ _defaultPort=1883
 
 mqttSubscriptions = [
   # "robo-03/notification/#",
+  "roboraptorz/notification/#",
 ]
 
 mqttSubscriptionHandlers = {
