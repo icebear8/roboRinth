@@ -43,6 +43,7 @@ RUN chown -R ${USER} ${WEB_UI_DIR}
 RUN chmod -R 755 ${UTILS_DIR}/*.sh
 
 USER ${USER}
+EXPOSE 1234
 
 ENTRYPOINT ["sh", "-c"]
 CMD ["sh ${APP_LAUNCHER}"]
