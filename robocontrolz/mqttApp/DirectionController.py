@@ -60,7 +60,7 @@ class DirectionController:
 
     def convertAngle(self, desiredangle):
         steering = 100 if desiredangle > 0 else -100
-        angle = desiredangle / 2
+        angle = desiredangle * 2
         return steering, angle
 
     def turn(self, msg):
