@@ -1,11 +1,13 @@
 from unittest import TestCase
 
-from map import Map, Position, Direction, Edge
+from graphmap import GraphMap, Edge
+from position import Position
+from direction import Direction
 
 
 class TestMap(TestCase):
     def test_get_all_edges(self):
-        test_map = Map()
+        test_map = GraphMap()
         self.__discover_test_map(test_map)
 
         def has_edge(position1: Position, position2: Position):
@@ -36,7 +38,7 @@ class TestMap(TestCase):
         assert (has_edge(Position(1, 0), Position(1, 1)))
 
     def test_visited_nodes(self):
-        test_map = Map()
+        test_map = GraphMap()
         self.__discover_test_map(test_map)
 
         def is_visited(position: Position):
@@ -63,7 +65,7 @@ class TestMap(TestCase):
         assert (is_visited(Position(3, 3)) is False)
 
     def test_available_directions(self):
-        test_map = Map()
+        test_map = GraphMap()
         self.__discover_test_map(test_map)
 
         def directions(x, y):
@@ -90,7 +92,7 @@ class TestMap(TestCase):
         assert (directions(3, 3) == set())
 
     def test_unvisited_directions(self):
-        test_map = Map()
+        test_map = GraphMap()
         self.__discover_test_map(test_map)
 
         def directions(x, y):
@@ -117,7 +119,7 @@ class TestMap(TestCase):
         assert (directions(3, 3) == set())
 
     @staticmethod
-    def __discover_test_map(map: Map):
+    def __discover_test_map(map: GraphMap):
         # discover test map
         #
         #   0   1   2   3

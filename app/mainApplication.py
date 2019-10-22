@@ -5,10 +5,10 @@ import logging
 import sys
 import time
 
-from MqttClient import MqttClient
+from mqttclient import MqttClient
 from control import Control
-from map import Map
-from map import Direction
+from graphmap import GraphMap
+from direction import Direction
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ def main(argv):
   client = MqttClient(host, port, clientId)
 
   # setup Control
-  theMap = Map()
+  theMap = GraphMap()
   control = Control(theMap,client)
   client.subscribeCrossingReachedCallback(control.onHandleCrossingReached)
   client.subscribeDiscoveryFinishedCallback(control.onHandleDiscoveryFinished)

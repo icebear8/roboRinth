@@ -1,6 +1,8 @@
 from enum import Enum, IntEnum
 from typing import Set
-from map import Direction, Position, Node
+from graphmap import Node
+from position import Position
+from direction import Direction
 
 
 class Action(IntEnum):
@@ -37,6 +39,7 @@ class PathDiscovery:
     def __forward_step(self) -> Action:
         print("PATH: forward")
         new_directions = self.__map.get_unvisited_directions(self.__currentNode.position)
+        print(new_directions)
         action = self.__convert_direction_to_action(self.__get_most_left_direction(new_directions))
         if action is None:
             action = self.__return_step()
@@ -53,6 +56,7 @@ class PathDiscovery:
             return Action.doAbort
         returnDirection = self.__calculate_direction(self.__currentNode, return_point)
         self.__currentNode = return_point
+        self.__currentDirection = returnDirection
         action = self.__convert_direction_to_action(returnDirection)
         return action
 
@@ -60,7 +64,7 @@ class PathDiscovery:
         self.__pathList.append(self.__currentNode)
         newPos = self.__currentNode.position.new_pos_in_direction(direction, 1)
         self.__currentNode = self.__map.get_node(newPos)
-        self._currentDirection = direction
+        self.__currentDirection = direction
 
     def __calculate_direction(self, a: Node, b: Node) -> Direction:
         if a.position.x > b.position.x:
