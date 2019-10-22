@@ -10,20 +10,20 @@ class TestPathDiscovery(TestCase):
     def test_handleDiscoveryFinished(self):
         map = Map()
         pos = Position(0, 0)
-        map.get_node = MagicMock(return_value=Node(pos))
+        map._get_and_create_node = MagicMock(return_value=Node(pos))
         path = PathDiscovery(map)
 
         # go west
         map.get_unvisited_directions = MagicMock(return_value=[Direction.EAST])
         pos = Position(1, 0)
-        map.get_node = MagicMock(return_value=Node(pos))
+        map._get_and_create_node = MagicMock(return_value=Node(pos))
 
         assert (path.handle_discovery_finished() == Action.goEast)
 
         # go north
         map.get_unvisited_directions = MagicMock(return_value=[Direction.EAST, Direction.NORTH])
         pos = Position(1, -1)
-        map.get_node = MagicMock(return_value=Node(pos))
+        map._get_and_create_node = MagicMock(return_value=Node(pos))
 
         assert (path.handle_discovery_finished() == Action.goNorth)
 

@@ -17,16 +17,18 @@ class Action(IntEnum):
 class PathDiscovery:
     def __init__(self, refmap):
         self.__map = refmap
-        self.__currentNode = refmap.get_node(Position(0, 0))
+        self.__current_position = Position(0, 0)
         self.__currentDirection = Direction.NORTH
         self.__pathList = []
 
     def get_current_position(self) -> Position:
-        return self.__currentNode.position
+        return self.__current_position
 
     def handle_crossing_reached(self) -> Action:
-        if self.__currentNode.visited:
+        if self.__map.get_node(self.__current_position).visited:
             action = self.__forward_step()
+            print("number of unvisited" + str(self.__map.get_number_of_unvisited_nodes()))
+
             return action
         else:
             print("PATH: doDiscovery")
@@ -38,7 +40,7 @@ class PathDiscovery:
 
     def __forward_step(self) -> Action:
         print("PATH: forward")
-        new_directions = self.__map.get_unvisited_directions(self.__currentNode.position)
+        new_directions = self.__map.get_unvisited_directions(self.__current_position)
         print(new_directions)
         action = self.__convert_direction_to_action(self.__get_most_left_direction(new_directions))
         if action is None:
@@ -51,27 +53,26 @@ class PathDiscovery:
     def __return_step(self) -> Action:
         print("PATH: return")
         try:
-            return_point =  self.__pathList.pop()
+            return_point = self.__pathList.pop()
         except:
             return Action.doAbort
-        returnDirection = self.__calculate_direction(self.__currentNode, return_point)
-        self.__currentNode = return_point
+        returnDirection = self.__calculate_direction(self.__current_position, return_point.position)
+        self.__current_position = return_point.position
         self.__currentDirection = returnDirection
         action = self.__convert_direction_to_action(returnDirection)
         return action
 
     def __set_new_position(self, direction: Direction):
-        self.__pathList.append(self.__currentNode)
-        newPos = self.__currentNode.position.new_pos_in_direction(direction, 1)
-        self.__currentNode = self.__map.get_node(newPos)
+        self.__pathList.append(self.__map.get_node(self.__current_position))
+        self.__current_position =  self.__current_position.new_pos_in_direction(direction, 1)
         self.__currentDirection = direction
 
-    def __calculate_direction(self, a: Node, b: Node) -> Direction:
-        if a.position.x > b.position.x:
+    def __calculate_direction(self, a: Position, b: Position) -> Direction:
+        if a.x > b.x:
             return Direction.WEST
-        elif a.position.x < b.position.x:
+        elif a.x < b.x:
             return Direction.EAST
-        elif a.position.y > b.position.y:
+        elif a.y > b.y:
             return Direction.NORTH
         else:
             return Direction.SOUTH

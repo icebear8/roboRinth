@@ -11,7 +11,7 @@ class TestMap(TestCase):
         self.__discover_test_map(test_map)
 
         def has_edge(position1: Position, position2: Position):
-            edge = Edge(test_map.get_node(position1), test_map.get_node(position2))
+            edge = Edge(test_map._get_and_create_node(position1), test_map._get_and_create_node(position2))
             return edge in test_map.get_all_edges()
 
         # check edges
@@ -42,7 +42,7 @@ class TestMap(TestCase):
         self.__discover_test_map(test_map)
 
         def is_visited(position: Position):
-            return test_map.get_node(position).visited
+            return test_map._get_and_create_node(position).visited
 
         assert (is_visited(Position(0, 0)) is False)
         assert (is_visited(Position(1, 0)) is False)
