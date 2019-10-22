@@ -49,7 +49,7 @@ class GraphMap:
     def get_available_directions(self, position: Position) -> Set[Direction]:
         result = set()
         for direction in Direction:
-            if self.__create_edge(position, direction) in self.edges:
+            if self.__create_edge(position, (direction, Color.BLACK)) in self.edges:
                 result.add(direction)
         return result
 
@@ -58,7 +58,7 @@ class GraphMap:
         for direction in Direction:
             if self.get_node(position.new_pos_in_direction(direction, 1)).visited:
                 continue
-            if self.__create_edge(position, direction) in self.edges:
+            if self.__create_edge(position, (direction, Color.BLACK)) in self.edges:
                 result.add(direction)
         return result
 
@@ -72,5 +72,5 @@ class GraphMap:
 
     def __create_edge(self, position: Position, direction: Tuple[Direction, Color]):
         node1 = self.get_node(position)
-        node2 = self.get_node(position.new_pos_in_direction(direction, 1))
-        return Edge(node1, node2, Color)
+        node2 = self.get_node(position.new_pos_in_direction(direction[0], 1))
+        return Edge(node1, node2, direction[1])

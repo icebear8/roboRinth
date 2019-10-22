@@ -3,7 +3,7 @@ import os
 
 from position import Position
 from direction import Direction
-
+from app.color import Color
 
 class MqttClientSimulator:
     def __init__(self, sleep_time: float):
@@ -20,7 +20,7 @@ class MqttClientSimulator:
             next_pos = self.position.new_pos_in_direction(direction)
             for pos1, pos2 in self.edges:
                 if pos1 == self.position and pos2 == next_pos or pos2 == self.position and pos1 == next_pos:
-                    directions.add(direction)
+                    directions.add((direction, Color.BLACK))
         directions = list(directions)
 
         async def answer():
