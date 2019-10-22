@@ -7,16 +7,19 @@ logger = logging.getLogger(__name__)
 
 class MapMatcher:
     def __init__(self):
-        self.globalMap = Map()
-        self.roboMaps = {}
+        self._roboMaps = {}
+        self.onMapUpdate = None
 
-    def registerRobotDriver(self, robotId, robotDriver):
-        self.roboMaps[robotId] = Map()
-        callback = lambda dirs : self.onDirectionsCallback(robotId, dirs)
+    def getMap(self, mapName):
+        return self.roboMaps[mapName]
+
+    def registerRobotDriver(self, mapName, robotDriver):
+        self._roboMaps[mapName] = Map(mapName)
+        callback = lambda dirs : self.onDirectionsCallback(mapName, dirs)
         robotDriver.onDirections = callback
 
-    def onDirectionsCallback(self, robotId, availableDirections):
-        map = self.roboMaps[robotId]
+    def onDirectionsCallback(self, mapName, availableDirections):
+        map = self._roboMaps[mapName]
         currentPosition = map.getRobotLocation()
         for direction in availableDirections:
             dx = 0
