@@ -2,7 +2,7 @@ from typing import Set, List, Tuple
 
 from direction import Direction
 from position import Position
-from app.color import Color
+from color import Color
 
 class Node:
     def __init__(self, position: Position):

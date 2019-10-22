@@ -1,43 +1,48 @@
-import logging
-import random
-import sys
-from app.graphmap import GraphMap
-from app.position import Position
-from app.direction import Direction
-from app.pathdiscovery import PathDiscovery, Action
-from typing import List, Tuple
-from app.color import Color
+import asyncio
+from typing import Tuple, List
 
-logger = logging.getLogger(__name__)
+from color import Color
+from direction import Direction
+from graphmap import GraphMap
+from mqttclient import MqttClient
+from pathdiscovery import Action, PathDiscovery
+from websocket_server import WebSocketServer
 
 
 class Control:
-    def __init__(self, theMap, mqttCom, pathFinder, server):
-        self._map = theMap
-        self._mqttCom = mqttCom
-        self._path = pathFinder
-        self._server = server
+    def __init__(self, graph_map: GraphMap, mqtt_client: MqttClient, path: PathDiscovery, websocket_server: WebSocketServer):
+        self.__graph_map = graph_map
+        self.__mqtt_client = mqtt_client
+        self.__path = path
+        self.__websocket_server = websocket_server
 
-    def onHandleCrossingReached(self):
+        mqtt_client.register_crossing_reached(self.handle_crossing_reached)
+        mqtt_client.register_available_directions(self.handle_discovery_finished)
+
+    async def run(self):
+        await asyncio.sleep(3)
+        self.__mqtt_client.discover_directions()
+
+    def handle_crossing_reached(self):
         print("onHandleCrossingReached")
-        self._server.send_update(self._map, self._path.get_current_position())
-        action = self._path.handle_crossing_reached()
+        self.__websocket_server.send_update(self.__graph_map, self.__path.get_current_position())
+        action = self.__path.handle_crossing_reached()
         self.handle_action(action)
 
     def handle_action(self, action: Action):
         if action == Action.doDiscovery:
-            self._mqttCom.discover_directions()
-        elif action is None:
+            self.__mqtt_client.discover_directions()
+        elif action == None:
             pass
         elif action == Action.doAbort:
             print("I have seen the whole world. Roger an out!")
-            sys.exit(0)
+            asyncio.get_event_loop().stop()
         else:
-            self._mqttCom.drive_direction(self._path.convert_action_to_direction(action))
+            self.__mqtt_client.drive_directions([self.__path.convert_action_to_direction(action)])
 
-    def onHandleDiscoveryFinished(self, direction: List[Tuple[Direction, Color]]):
-        print("onHandleDiscoveryFinished:" + str(direction))
-        self._server.send_update(self._map, self._path.get_current_position())
-        self._map.node_discovered(self._path.get_current_position(), direction)
-        action = self._path.handle_discovery_finished()
+    def handle_discovery_finished(self, directions: List[Tuple[Direction, Color]]):
+        print("onHandleDiscoveryFinished:" + str(directions))
+        self.__graph_map.node_discovered(self.__path.get_current_position(), directions)
+        self.__websocket_server.send_update(self.__graph_map, self.__path.get_current_position())
+        action = self.__path.handle_discovery_finished()
         self.handle_action(action)
