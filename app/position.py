@@ -6,9 +6,6 @@ class Position:
         self.x = x
         self.y = y
 
-    def __str__(self):
-        return str(self.__class__) + ": (" + str(self.x) + " " + str(self.y) +")"
-
     def new_pos_in_direction(self, direction: Direction, distance: int = 1) -> 'Position':
         offsets = {
             Direction.NORTH: Position(0, -distance),
@@ -26,3 +23,6 @@ class Position:
 
     def __add__(self, other):
         return Position(self.x + other.x, self.y + other.y)
+
+    def __repr__(self):
+        return 'Position({}, {})'.format(self.x, self.y)
