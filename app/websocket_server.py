@@ -23,6 +23,7 @@ class WebSocketServer:
             return {
                 "node1": format_pos(edge.node1.position),
                 "node2": format_pos(edge.node2.position),
+                "color": edge.color.to_html(),
             }
 
         self.__send({

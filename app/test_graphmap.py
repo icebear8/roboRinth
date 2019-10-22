@@ -5,7 +5,7 @@ from position import Position
 from direction import Direction
 
 
-class TestMap(TestCase):
+class TestGraphMap(TestCase):
     def test_get_all_edges(self):
         test_map = GraphMap()
         self.__discover_test_map(test_map)

@@ -1,26 +1,25 @@
 import asyncio
 from control import Control
 from graphmap import GraphMap
-from mqttclient_simulator import MqttClientSimulator
+from mqttclient import MqttClient
 from pathdiscovery import PathDiscovery
+from robosim import RoboSimulator
 from websocket_server import WebSocketServer
 
 
-def test_simulator():
-    client = MqttClientSimulator(sleep_time=0.25)
+def main():
+    robosim = RoboSimulator(sleep_time=0.25)
+    mqtt_client = MqttClient()
+    websocket_server = WebSocketServer()
+    graph_map = GraphMap()
+    path = PathDiscovery(graph_map)
+    control = Control(graph_map, mqtt_client, path, websocket_server)
 
-    theMap = GraphMap()
-    path = PathDiscovery(theMap)
-    server = WebSocketServer()
-    control = Control(theMap, client, path, server)
-
-    client.register_crossing_reached(control.onHandleCrossingReached)
-    client.register_available_directions(control.onHandleDiscoveryFinished)
-    #client.register_crossing_reached(lambda: client.discover_directions())
-    #client.register_available_directions(lambda directions: client.drive_direction(directions[0]))
-    asyncio.get_event_loop().call_later(3, lambda: client.discover_directions())
+    asyncio.get_event_loop().create_task(robosim.run())
+    asyncio.get_event_loop().create_task(mqtt_client.run())
+    asyncio.get_event_loop().create_task(control.run())
     asyncio.get_event_loop().run_forever()
 
 
 if __name__ == '__main__':
-    test_simulator()
+    main()

@@ -1,128 +1,64 @@
-import logging
-import random
-import sys
-from direction import Direction
+import asyncio
 import json
-import paho.mqtt.client as mqtt
-from app.color import Color
+from typing import List
 
-logger = logging.getLogger(__name__)
+from hbmqtt.client import MQTTClient
+from hbmqtt.mqtt.constants import QOS_0
+from hbmqtt.session import ApplicationMessage
 
-_defaultHost = "localhost"
-_defaultPort = 1883
+from color import Color
+from direction import Direction
 
-mqttSubscriptions = [
-    "robo-01/notification/CrossingReached/#",
-    "robo-01/notification/DiscoveryFinished/#",
-    "robo-01/notification/busy/#",
-]
-mqttSubscriptionHandlers = {
-    "robo-01/notification/CrossingReached/#": None,
-    "robo-01/notification/DiscoveryFinished/#": None,
-    "robo-01/notification/busy/#": None,
-}
+MQTT_BROKER_URI = 'mqtt://localhost'
+
+TOPIC_REQUEST_DISCOVER_DIRECTIONS = 'robo-sim/request/discoverDirections'
+TOPIC_REQUEST_DRIVE_DIRECTIONS = 'robo-sim/request/driveDirections'
+TOPIC_NOTIFY_AVAILABLE_DIRECTIONS = 'robo-sim/notification/availableDirections'
+TOPIC_NOTIFY_CROSSING_REACHED = 'robo-sim/notification/crossingReached'
 
 
 class MqttClient:
-    def __init__(self, host=_defaultHost, port=_defaultPort, client_id=None):
-        if client_id is None:
-            client_id = "mqttapp_" + str(random.randint(1, sys.maxsize))
+    def __init__(self):
+        self.__crossing_reached_handlers = []
+        self.__available_directions_handlers = []
+        self.__client = MQTTClient()
 
-        logger.debug("Init client, host: " + str(host) + "; port: " + str(port) + "; clientId: " + client_id)
+    def register_crossing_reached(self, handler):
+        self.__crossing_reached_handlers.append(handler)
 
-        mqttSubscriptionHandlers["robo-01/notification/CrossingReached/#"] = self._crossingReachedCallack
-        mqttSubscriptionHandlers["robo-01/notification/DiscoveryFinished/#"] = self._discoveryFinishedCallback
-        mqttSubscriptionHandlers["robo-01/notification/busy/#"] = self._robotIsBusyCallback
+    def register_available_directions(self, handler):
+        self.__available_directions_handlers.append(handler)
 
-        self._host = host
-        self._port = port
-        self._keepalive = 60
-        self._client = mqtt.Client(client_id=client_id, clean_session=True)
-        self._client.on_connect = self._onConnect
-        self._client.on_subscribe = self._onSubscribe
-        self._client.on_unsubscribe = self._onUnsubscribe
-        self._client.on_disconnect = self._onDisconnect
-        self._client.on_message = self._onMessage
-        self._crossingReachedHandlers = []
-        self._discoveryFinishedHandlers = []
-        self._roboIsBusyHandlers = []
+    async def run(self):
+        handlers = {
+            TOPIC_NOTIFY_CROSSING_REACHED: self.__crossing_reached,
+            TOPIC_NOTIFY_AVAILABLE_DIRECTIONS: self.__available_directions,
+        }
 
-    def subscribeCrossingReachedCallback(self, callback):
-        self._crossingReachedHandlers.append(callback)
+        await self.__client.connect(MQTT_BROKER_URI, True)
+        print('Connected!')
 
-    def subscribeDiscoveryFinishedCallback(self, callback):
-        self._discoveryFinishedHandlers.append(callback)
+        await self.__client.subscribe([(topic, QOS_0) for topic in handlers.keys()])
+        print('Subscribed!')
 
-    def subscribeRoboIsBusyCallback(self, callback):
-        self._roboIsBusyHandlers.append(callback)
+        while True:
+            message = await self.__client.deliver_message()
+            await handlers[message.topic](message)
 
-    def startAsync(self):
-        self._client.connect(self._host, self._port, self._keepalive)
-        self._client.loop_start()
+    def discover_directions(self):
+        asyncio.get_event_loop().create_task(self.__client.publish(TOPIC_REQUEST_DISCOVER_DIRECTIONS, b''))
 
-    def stop(self):
-        self._client.loop_stop()
-        self._client.disconnect()
+    def drive_directions(self, directions: List[Direction]):
+        payload = json.dumps([direction.to_char() for direction in directions]).encode('utf-8')
+        asyncio.get_event_loop().create_task(self.__client.publish(TOPIC_REQUEST_DRIVE_DIRECTIONS, payload))
 
-    def _subscribeTopics(self, topics):
-        for topic in topics:
-            self._client.subscribe(topic)
+    async def __crossing_reached(self, message: ApplicationMessage):
+        for handler in self.__crossing_reached_handlers:
+            handler()
 
-    def _setupMessageHandler(self, handlers):
-        for handler in handlers:
-            self._client.message_callback_add(handler, handlers[handler])
+    async def __available_directions(self, message: ApplicationMessage):
+        payload = json.loads(message.data)
+        directions = [(Direction.from_char(entry[0]), Color.from_char(entry[1])) for entry in payload]
 
-    def _setupNotifications(self):
-        logger.debug("SETUP")
-
-    def subscribeMessage(self, topic, function):
-        self._client.subscribe()
-
-    def _onConnect(self, client, userdata, flags, rc):
-        logger.debug("Connected with result code " + str(rc))
-        self._subscribeTopics(mqttSubscriptions)
-        self._setupMessageHandler(mqttSubscriptionHandlers)
-        self._setupNotifications()
-
-    def _onDisconnect(self, client, userdata, rc):
-        if rc != 0:
-            logger.warn("Unexpected disconnection")
-
-    def _onSubscribe(self, client, userdata, mid, granted_qos):
-        logger.debug("Subscribed " + str(mid))
-
-    def _onUnsubscribe(self, client, userdata, mid, granted_qos):
-        logger.debug("Unsubscribed " + str(mid))
-
-    def _onMessage(self, client, userdata, msg):
-        logger.debug("Unhandled message: " + msg.topic + " " + str(msg.payload))
-
-    def publishMessageDriveDirection(self, direction):
-        payload = json.dumps(self._convert_direction_to_payload(direction))
-        self._client.publish("lemi-01/notification/driveDirection/", payload);
-
-    def publishDiscoverDirections(self):
-        self._client.publish("lemi-01/notification/discoverDirections/")
-
-    def _crossingReachedCallack(self, client, userdata, msg):
-        for callback in self._crossingReachedHandlers:
-            callback()
-
-    def _discoveryFinishedCallback(self, client, userdata, msg):
-        logger.debug("_discoveryFinishedCallback")
-        avaiable_directories = self._convert_payload_to_directions(json.loads(msg.payload))
-        for callback in self._discoveryFinishedHandlers:
-            callback(avaiable_directories)
-
-    def _robotIsBusyCallback(self, client, userdata, msg):
-        for callback in self._roboIsBusyHandlers:
-            callback()
-
-    def _convert_payload_to_directions(self, payload):
-        mapping_direction = {"E": Direction.EAST, "N": Direction.NORTH, "S": Direction.SOUTH, "W": Direction.WEST}
-        mapping_color = {"R": Color.RED, "B": Color.BLACK, "Y": Color.YELLOW}
-        return [(mapping_direction[entry[0]], mapping_color[entry[1]]) for entry in payload]
-
-    def _convert_direction_to_payload(self, directions):
-        mapping_list = {Direction.EAST: "E", Direction.NORTH: "N", Direction.SOUTH: "S", Direction.WEST: "W"}
-        return [mapping_list[entry] for entry in directions]
+        for handler in self.__available_directions_handlers:
+            handler(directions)
