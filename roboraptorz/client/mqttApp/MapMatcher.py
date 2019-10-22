@@ -9,9 +9,13 @@ class MapMatcher:
     def __init__(self):
         self._roboMaps = {}
         self.onMapUpdate = None
+        self.server = None
 
     def getMap(self, mapName):
         return self._roboMaps[mapName]
+
+    def setServer(self, server):
+        self.server = server
 
     def registerRobotDriver(self, mapName, robotDriver):
         self._roboMaps[mapName] = Map(mapName)
@@ -26,6 +30,8 @@ class MapMatcher:
         roboMap.addDirectionsAtCurrentLocation(mappedDirections)
         if self.onMapUpdate:
             self.onMapUpdate(mapName)
+        if self.server:
+            self.server.send_update(roboMap)
 
     def mapDirectionAndColorToVectorAndColor(self, dirColTup):
         direction, color = dirColTup
