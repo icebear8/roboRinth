@@ -16,7 +16,7 @@ f = followLine()
 
 _defaultHost="localhost"
 _defaultPort=1883
-_roboName = "robo-01"
+_roboName = "robo-02"
 
 mqttSubscriptions = [
   #_roboName+"/notification/#",

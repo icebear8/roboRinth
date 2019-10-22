@@ -29,6 +29,12 @@ class TurnEvents(Enum):
     ANGLE_REACHED = 2
 
 
+colors = {
+    'Black' : 'B',
+    'Yellow' : 'Y',
+    'Red' : 'R',
+}
+
 directionToAngle = {
     'L' : -90,
     'F' : 0,
@@ -43,7 +49,6 @@ angleToDirection = {
     270 : 'L',
     360 : 'F',
 }
-
 
 class DirectionController:
     def __init__(self):
@@ -166,7 +171,7 @@ class DirectionController:
             else:
                 # recurring action
                 print('DISCOVERY, recurring action')
-                print('add color to list: ' + data + ', ' + str(self.roundedAngle()))
+                print('add color to list: ' + angleToDirection[self.roundedAngle()] + ', ' + colors[data])
 
         elif self._directionState == DirectionState.DISCOVERY_FINISHED:
             if self._directionState != oldDirectionState:
