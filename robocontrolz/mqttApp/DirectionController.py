@@ -122,7 +122,9 @@ class DirectionController:
         # actions
         # IDLE
         if self._directionState == DirectionState.IDLE:
-            print('IDLE, nothing to do')
+            if self._directionState != oldDirectionState:
+                # entry action
+                print('IDLE, nothing to do')
         # DISCOVERY
         elif self._directionState == DirectionState.START_DISCOVERY:
             if self._directionState != oldDirectionState:
