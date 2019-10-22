@@ -19,7 +19,7 @@ class Control:
     self._mapMatcher.onMapUpdate=self._onMapUpdate
 
   def start(self):
-    self._map.setRobotLocation(Point(0, 0))
+    self._map.setRobotLocation(Point(0,0))
     self._roboDriver.discoverMode(True)
 
   def _map(self):
@@ -47,7 +47,7 @@ class Control:
       nextDirection = _calcNextExploreStep()
       logger.debug(self.roboName + "exploreStep, nextStep to be executed: " + str(nextDirection))
       if nextDirection:
-        self._roboDriver.driveDirection(nextDirection)
+        self._move(nextDirection)
 
   def _calcNextExploreStep():
     directions = self._map().getAvailableDirections()
@@ -69,3 +69,8 @@ class Control:
 
     logger.info(self.roboName + "calcNextExploreStep, No unexplored neighbours or children!")
     return None
+
+  def _move(direction=RoboDirection.NORTH):
+    nextPosition=self._map().getRobotLocation().move(direction)
+    self._map().setRobotLocation(nextPosition)
+    self._roboDriver.driveDirection(direction)
