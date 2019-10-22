@@ -88,9 +88,11 @@ def main(argv):
   time.sleep(2)
 
   # Test code for MapMatcher
-  roboDriver = RoboDriver("roboraptorz")
-  mapMatcher = MapMatcher()
-  mapMatcher.registerRobotDriver("roboraptorz", roboDriver)
+  roboName="roboraptorz"
+  roboDriver=RoboDriver(roboName)
+  mapMatcher=MapMatcher()
+  mapMatcher.registerRobotDriver(roboName, roboDriver)
+  roboName=Control(roboName, mapMatcher, roboDriver)
 
   callback = lambda client, userdata, msg : _mqttCallbackSim(roboDriver, client, userdata, msg)
   simHandlers = {
