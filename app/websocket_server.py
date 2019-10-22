@@ -2,7 +2,7 @@ import asyncio
 import json
 import websockets
 
-from map import Map, Edge
+from map import Map, Edge, Position
 
 
 class WebSocketServer:
@@ -11,20 +11,23 @@ class WebSocketServer:
         self.__server = websockets.serve(self.__handle_connection, "localhost", 8765)
         asyncio.get_event_loop().run_until_complete(self.__server)
 
-    def send_update(self, robo_map: Map):
-        def format_entry(entry: Edge):
+    def send_update(self, robo_map: Map, current_position: Position):
+        def format_pos(position: Position):
             return {
-                "node1": {
-                    "x": entry.node1.position.x,
-                    "y": entry.node1.position.y,
-                },
-                "node2": {
-                    "x": entry.node2.position.x,
-                    "y": entry.node2.position.y,
-                }
+                "x": position.x,
+                "y": position.y,
             }
 
-        self.__send([format_entry(entry) for entry in robo_map.get_all_edges()])
+        def format_edge(edge: Edge):
+            return {
+                "node1": format_pos(edge.node1.position),
+                "node2": format_pos(edge.node2.position),
+            }
+
+        self.__send({
+            "edges": [format_edge(edge) for edge in robo_map.get_all_edges()],
+            "position": format_pos(current_position),
+        })
 
     def __send(self, message):
         async def do_send():

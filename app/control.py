@@ -21,6 +21,7 @@ class Control:
   def onHandleCrossingReached(self):
     print("onHandleCrossingReached")
     action = self._path.handle_crossing_reached()
+    self._server.send_update(self._map, self._path.get_current_position())
     self.handle_action(action)
 
   def handle_action(self, action : Action):
@@ -37,6 +38,6 @@ class Control:
   def onHandleDiscoveryFinished(self, direction: Direction):
     print("onHandleDiscoveryFinished:" + str(direction))
     self._map.node_discovered(self._path.get_current_position(), direction)
-    self._server.send_update(self._map)
+    self._server.send_update(self._map, self._path.get_current_position())
     action = self._path.handle_discovery_finished()
     self.handle_action(action)

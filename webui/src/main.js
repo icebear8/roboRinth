@@ -24,32 +24,42 @@ $(document).ready(function() {
     let websocket = new WebSocket('ws://localhost:8765');
 
     websocket.onmessage = function(msg) {
-        const data = JSON.parse(msg.data);
-        console.log(data);
+        const updateData = JSON.parse(msg.data);
+        console.log(updateData);
 
         const nodeId = node => `${node.x}:${node.y}`;
-        let new_nodes = [];
-        let new_edges = [];
-        for (const entry of data) {
-            const edge = {
-                from: nodeId(entry.node1),
-                to: nodeId(entry.node2),
-            };
-            new_edges.push(edge);
 
-            for (const node of [entry.node1, entry.node2]) {
-                new_nodes.push({
-                    id: nodeId(node),
-                    label: nodeId(node),
-                    x: node.x * 70,
-                    y: node.y * 70,
-                });
+        let edges = [];
+        for (const edgeData of updateData.edges) {
+            const edge = {
+                from: nodeId(edgeData.node1),
+                to: nodeId(edgeData.node2),
+            };
+            edges.push(edge);
+        }
+
+        let nodes = [];
+        for (const edgeData of updateData.edges) {
+            for (const nodeData of [edgeData.node1, edgeData.node2]) {
+                const node = {
+                    id: nodeId(nodeData),
+                    label: nodeId(nodeData),
+                    x: nodeData.x * 70,
+                    y: nodeData.y * 70,
+                };
+
+                if (nodeData.x === updateData.position.x && nodeData.y === updateData.position.y) {
+                    node.color = 'red';
+                }
+
+                nodes.push(node);
             }
         }
-        new_nodes = _.uniqBy(new_nodes, node => node.id);
+        nodes = _.uniqBy(nodes, node => node.id);
+
         network.setData({
-            nodes: new_nodes,
-            edges: new_edges,
+            nodes: nodes,
+            edges: edges,
         });
     };
 });
