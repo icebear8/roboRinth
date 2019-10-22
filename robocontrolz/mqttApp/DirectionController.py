@@ -29,10 +29,10 @@ class TurnEvents(Enum):
 
 
 direction = {
+    'L' : -90,
     'F' : 0,
     'R' : 90,
     'B' : 180,
-    'L' : 270,
 }
 
 
@@ -67,7 +67,10 @@ class DirectionController:
         print('turn')
         if self._directionState == DirectionState.IDLE:
             self.zeroAngle()
-            self.processEvent(DirectionEvents.START_TURN, direction.get(msg, None))
+            if type(msg) == int:
+                self.processEvent(DirectionEvents.START_TURN, msg)
+            else:
+                self.processEvent(DirectionEvents.START_TURN, direction.get(msg, 0))
         else:
             print('error: robot busy, turn not allowed')
 
@@ -116,7 +119,6 @@ class DirectionController:
         elif self._directionState == DirectionState.TURN_FINISHED:
             self._directionState = DirectionState.IDLE
 
-
         # actions
         # IDLE
         if self._directionState == DirectionState.IDLE:
@@ -144,7 +146,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('DISCOVERY_FINISHED, entry action')
-                self.processEvent(None, None)
+                self.processEvent(None)
             else:
                 # recurring action
                 print('DISCOVERY_FINISHED, recurring action')
@@ -153,7 +155,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('TURN_TO_POS, entry action')
-                self.processTurnEvent(TurnEvents.NEW_ANGLE, direction[data])
+                self.processTurnEvent(TurnEvents.NEW_ANGLE, data)
             else:
                 # recurring action
                 print('TURN_TO_POS, recurring action')
@@ -161,7 +163,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('TURN_FINISHED, entry action')
-                self.processEvent(None, None)
+                self.processEvent(None)
             else:
                 # recurring action
                 print('TURN_FINISHED, recurring action')
