@@ -1,8 +1,8 @@
-from typing import Set
+from typing import Set, List, Tuple
 
 from direction import Direction
 from position import Position
-
+from app.color import Color
 
 class Node:
     def __init__(self, position: Position):
@@ -14,14 +14,17 @@ class Node:
 
 
 class Edge:
-    def __init__(self, node1: Node, node2: Node):
+    def __init__(self, node1: Node, node2: Node, color: Color):
         self.node1 = node1
         self.node2 = node2
+        self.color = color
 
     def __hash__(self):
+        #color ignored by purpose
         return hash(self.node1) | hash(self.node2)
 
     def __eq__(self, other):
+        #color ignored purpose
         return {self.node1, self.node2} == {other.node1, other.node2}
 
 
@@ -30,12 +33,18 @@ class GraphMap:
         self.nodes = dict()
         self.edges = set()
 
-    def node_discovered(self, position: Position, available_directions: Set[Direction]):
+    def node_discovered(self, position: Position, available_directions: List[Tuple[Direction, Color]]):
         node = self.get_node(position)
         node.visited = True
 
         for direction in available_directions:
             self.edges.add(self.__create_edge(position, direction))
+
+    def get_edge_color(self, position, direction):
+        for e in self.edges:
+            if (e == self.__create_edge(position, direction)):
+                return e.color
+        return None
 
     def get_available_directions(self, position: Position) -> Set[Direction]:
         result = set()
@@ -61,7 +70,7 @@ class GraphMap:
     def get_all_edges(self) -> Set[Edge]:
         return self.edges
 
-    def __create_edge(self, position: Position, direction: Direction):
+    def __create_edge(self, position: Position, direction: Tuple[Direction, Color]):
         node1 = self.get_node(position)
         node2 = self.get_node(position.new_pos_in_direction(direction, 1))
-        return Edge(node1, node2)
+        return Edge(node1, node2, Color)
