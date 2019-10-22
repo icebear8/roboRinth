@@ -6,12 +6,12 @@ from direction import Direction
 
 
 class Action(IntEnum):
-    goNorth = 0,
-    goEast = 1,
-    goSouth = 2,
-    goWest = 3,
-    doDiscovery = 4,
-    doAbort = 5,
+    GO_NORTH = 0,
+    GO_EAST = 1,
+    GO_SOUTH = 2,
+    GO_WEST = 3,
+    DO_DISCOVERY = 4,
+    DO_ABORT = 5,
 
 
 class PathDiscovery:
@@ -30,7 +30,7 @@ class PathDiscovery:
             return action
         else:
             print("PATH: doDiscovery")
-            return Action.doDiscovery
+            return Action.DO_DISCOVERY
 
     def handle_discovery_finished(self) -> Action:
         action = self.__forward_step()
@@ -53,7 +53,7 @@ class PathDiscovery:
         try:
             return_point =  self.__pathList.pop()
         except:
-            return Action.doAbort
+            return Action.DO_ABORT
         returnDirection = self.__calculate_direction(self.__currentNode, return_point)
         self.__currentNode = return_point
         self.__currentDirection = returnDirection
@@ -77,20 +77,20 @@ class PathDiscovery:
             return Direction.SOUTH
 
     def __convert_direction_to_action(self, dir: Direction) -> Action:
-        lookup = {Direction.NORTH: Action.goNorth,
-                  Direction.EAST: Action.goEast,
-                  Direction.SOUTH: Action.goSouth,
-                  Direction.WEST: Action.goWest,
+        lookup = {Direction.NORTH: Action.GO_NORTH,
+                  Direction.EAST: Action.GO_EAST,
+                  Direction.SOUTH: Action.GO_SOUTH,
+                  Direction.WEST: Action.GO_WEST,
                   None: None,
                   }
         return lookup[dir]
 
     def convert_action_to_direction(self, action: Action) -> Direction:
         lookup = {
-            Action.goNorth: Direction.NORTH,
-            Action.goEast: Direction.EAST,
-            Action.goSouth: Direction.SOUTH,
-            Action.goWest: Direction.WEST,
+            Action.GO_NORTH: Direction.NORTH,
+            Action.GO_EAST: Direction.EAST,
+            Action.GO_SOUTH: Direction.SOUTH,
+            Action.GO_WEST: Direction.WEST,
         }
         return lookup[action]
 

@@ -30,11 +30,11 @@ class Control:
         self.handle_action(action)
 
     def handle_action(self, action: Action):
-        if action == Action.doDiscovery:
+        if action == Action.DO_DISCOVERY:
             self.__mqtt_client.discover_directions()
         elif action == None:
             pass
-        elif action == Action.doAbort:
+        elif action == Action.DO_ABORT:
             print("I have seen the whole world. Roger an out!")
             asyncio.get_event_loop().stop()
         else:
