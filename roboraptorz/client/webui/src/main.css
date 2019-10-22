@@ -1,0 +1,9 @@
+body {
+    margin-top: 1em;
+}
+
+#network {
+    width: 800px;
+    height: 600px;
+    border: 1px solid lightgray;
+}
