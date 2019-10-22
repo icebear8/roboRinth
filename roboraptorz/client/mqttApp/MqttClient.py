@@ -12,16 +12,6 @@ logger = logging.getLogger(__name__)
 _defaultHost="localhost"
 _defaultPort=1883
 
-mqttSubscriptions = [
-  # "robo-03/notification/#",
-  "roboraptorz/notification/#",
-]
-
-mqttSubscriptionHandlers = {
-  # "robo-03/notification/color/#":   handler.handleColor,
-  # "robo-03/notification/gyro/#":    handler.handleGyro,
-}
-
 class MqttClient:
   def __init__(self, host=_defaultHost, port=_defaultPort, clientId=None):
     if clientId is None:
@@ -62,15 +52,8 @@ class MqttClient:
     for handler in handlers:
       self._client.message_callback_add(handler, handlers[handler])
 
-  def _setupNotifications(self):
-    client.publish("robo-01/subscribe/color/name")
-    client.publish("robo-01/subscribe/gyro/angle")
-
   def _onConnect(self, client, userdata, flags, rc):
     logger.debug("Connected with result code " + str(rc))
-    self.subscribeTopics(mqttSubscriptions)
-    self.addMessageHandler(mqttSubscriptionHandlers)
-    self._setupNotifications()
 
   def _onDisconnect(self, client, userdata, rc):
     if rc != 0:
