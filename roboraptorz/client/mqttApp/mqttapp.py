@@ -70,9 +70,10 @@ def main(argv):
   # Test code for MapMatcher
   roboName="roboraptorz-0"
   roboDriver=RoboDriver(roboName)
-  roboDriver.setMqttClient(client)
   client.subscribeTopics(roboName + '/notification/#')
   client.addMessageHandler(roboDriver.getMqttHandlerList())
+
+  roboDriver.setMqttClient(client)
 
   mapMatcher=MapMatcher()
   mapMatcher.registerRobotDriver(roboName, roboDriver)

@@ -20,7 +20,7 @@ class Control:
 
   def start(self):
     self._map().setRobotLocation(Point(0,0))
-    self._roboDriver.discoverMode(True)
+    #self._roboDriver.discoverMode(True)
 
   def _map(self):
     return self._mapMatcher.getMap(self.roboName)
@@ -42,7 +42,7 @@ class Control:
 
 
   def _triggerExploreStep(self):
-    timer = threading.Timer(1, self._executeExploreStep())
+    timer = threading.Timer(1.0, self._executeExploreStep)
     timer.start()
 
   def _executeExploreStep(self):
@@ -54,18 +54,24 @@ class Control:
 
   def _calcNextExploreStep(self):
     directions = self._map().getAvailableDirections()
-    logger.debug(self.roboName + "calcNextExploreStep, available directions count: " + str(len(directions)))
+    logger.debug(self.roboName + " calcNextExploreStep, available directions count: " + str(len(directions)) + " :")
+    for dir in directions:
+        logger.debug("\t" + str(dir))
     # find unexplored neighbours
     unexplored = list(filter(lambda element: element.explored==False, directions))
     if len(unexplored):
-      logger.debug(self.roboName + "calcNextExploreStep, unexplored list count: " + str(len(unexplored)))
+      logger.debug(self.roboName + " calcNextExploreStep, unexplored list count: " + str(len(unexplored)) + " :")
+      for dir in unexplored:
+          logger.debug("\t" + str(dir))
       unexplored.sort(key=lambda element: DirectionSortOrder(element.direction))
       return unexplored[0].direction
 
     # find closest unexplored child
-    unexploredChild = list(filter(lambda element: element.hasUnexploredChildren==True, directions))
+    unexploredChild = list(filter(lambda element: element.hasUnexploredChildren()==True, directions))
     if unexploredChild:
-      logger.debug(self.roboName + "calcNextExploreStep, unexploredChildren list count: " + str(len(unexploredChild)))
+      logger.debug(self.roboName + " calcNextExploreStep, unexploredChildren list count: " + str(len(unexploredChild)) + " :")
+      for dir in unexploredChild:
+          logger.debug("\t" + str(dir))
       unexploredChild.sort(key=lambda element: element.distanceToUnexplored)
       return unexploredChild[0].direction
 

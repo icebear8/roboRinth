@@ -76,6 +76,9 @@ class AvailableDirection:
             return False
         return True
 
+    def __str__(self):
+        return "AvDir(dir: " + DirToStr(self.direction) + ", explored: " + str(self.explored) + ", distance: " + str(self.distanceToUnexplored) + ", hasUnexpChildren: " + str(self.hasUnexploredChildren()) + ")"
+
 class Map:
     ROBOT_LOCATION_KEY = "robotLocation"
     START_POINT_KEY = "startPoint"
