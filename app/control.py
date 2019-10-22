@@ -5,7 +5,7 @@ import sys
 from map import Map
 from map import Position
 from map import Direction
-from Path import PathDiscovery
+from Path import PathDiscovery, Action
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +18,23 @@ class Control:
     self._path = pathFinder
 
   def onHandleCrossingReached(self):
-    self._path.handle_crossing_reached()
-    logger.debug("onHandleCrossingReached")
+    print("onHandleCrossingReached")
+    action = self._path.handle_crossing_reached()
+    self.handle_action(action)
+
+  def handle_action(self, action : Action):
+    if action == Action.doDiscovery:
+      self._mqttCom.discover_directions()
+    elif action == None:
+      pass
+    elif action == Action.doAbort:
+      print("I have seen the whole world. Roger an out!")
+      sys.exit(0)
+    else:
+      self._mqttCom.drive_direction(self._path.convert_action_to_direction(action))
 
   def onHandleDiscoveryFinished(self, direction: Direction):
-    logger.debug("onHandleDiscoveryFinished:" + str(direction))
+    print("onHandleDiscoveryFinished:" + str(direction))
     self._map.node_discovered(self._path.get_current_position(), direction)
-
+    action = self._path.handle_discovery_finished()
+    self.handle_action(action)
