@@ -27,13 +27,14 @@ class TurnState(Enum):
 
 class TurnEvents(Enum):
     NEW_ANGLE = 1
+    ANGLE_REACHED = 2
 
 
 direction = {
-    'L' : -90,
     'F' : 0,
     'R' : 90,
-    'B' : 180
+    'B' : 180,
+    'L' : 270,
 }
 
 
@@ -74,8 +75,8 @@ class DirectionController:
     def updateAngle(self, client, userdata, msg):
         print('new angle')
         self._rawAngle = userdata
-        if self._turnState == TurnState.TURN_ANGLE & self.correctedAngle() == self._destinationAngle:
-            self.processEvent(DirectionEvents.POS_REACHED)
+        if self._turnState == TurnState.TURN_ANGLE and self.correctedAngle() >= self._destinationAngle:
+            self.processTurnEvent(TurnEvents.ANGLE_REACHED)
 
     def updateColor(self, msg):
         print('new color')
@@ -84,7 +85,7 @@ class DirectionController:
             self.processEvent(DirectionEvents.NEW_COLOR, None)
 
     def processEvent(self, event, data):
-        oldState = self._directionState
+        oldDirectionState = self._directionState
 
         # transitions
         # IDLE
@@ -122,21 +123,23 @@ class DirectionController:
             print('IDLE, nothing to do')
         # DISCOVERY
         elif self._directionState == DirectionState.START_DISCOVERY:
-            if self._directionState != oldState:
+            if self._directionState != oldDirectionState:
                 # entry action
                 print('START_DISCOVERY, entry action')
+                self.processTurnEvent(TurnEvents.NEW_ANGLE, -10)
             else:
                 # recurring action
                 print('START_DISCOVERY, recurring action')
         elif self._directionState == DirectionState.DISCOVERY:
-            if self._directionState != oldState:
+            if self._directionState != oldDirectionState:
                 # entry action
                 print('DISCOVERY, entry action')
+                self.processTurnEvent(TurnEvents.NEW_ANGLE, 360)
             else:
                 # recurring action
                 print('DISCOVERY, recurring action')
         elif self._directionState == DirectionState.DISCOVERY_FINISHED:
-            if self._directionState != oldState:
+            if self._directionState != oldDirectionState:
                 # entry action
                 print('DISCOVERY_FINISHED, entry action')
                 self.processEvent(None, None)
@@ -145,14 +148,15 @@ class DirectionController:
                 print('DISCOVERY_FINISHED, recurring action')
         # TURN
         elif self._directionState == DirectionState.TURN_TO_POS:
-            if self._directionState != oldState:
+            if self._directionState != oldDirectionState:
                 # entry action
                 print('TURN_TO_POS, entry action')
+                self.processTurnEvent(TurnEvents.NEW_ANGLE, direction[data])
             else:
                 # recurring action
                 print('TURN_TO_POS, recurring action')
         elif self._directionState == DirectionState.TURN_FINISHED:
-            if self._directionState != oldState:
+            if self._directionState != oldDirectionState:
                 # entry action
                 print('TURN_FINISHED, entry action')
                 self.processEvent(None, None)
@@ -161,6 +165,22 @@ class DirectionController:
                 print('TURN_FINISHED, recurring action')
 
 
+    def processTurnEvent(self, event, data):
+        if self._turnState == TurnState.IDLE:
+            if event == TurnEvents.NEW_ANGLE:
+                self._destinationAngle = data
+                if data < 0:
+                    print('turn robot to the left')
+                if data > 0:
+                    print('turn robot to the right')
+                self._turnState = TurnState.TURN_ANGLE
+        elif self._turnState == TurnState.TURN_ANGLE:
+            if event == TurnEvents.ANGLE_REACHED:
+                print('stop turn robot')
+                self.processEvent(DirectionEvents.POS_REACHED)
+                self._turnState = TurnState.FINISHED
+        elif self._turnState == TurnState.FINISHED:
+            self._turnState = TurnState.IDLE
 
 
     def zeroAngle(self):
