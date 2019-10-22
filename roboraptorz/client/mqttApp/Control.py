@@ -26,7 +26,7 @@ class Control:
     return self._mapMatcher.getMap(self.roboName)
 
   # Callbacks map
-  def _onMapUpdate(mapName):
+  def _onMapUpdate(self, mapName):
     if mapName in (self.roboName):
       logger.debug(self.roboName + "OnMapUpdate: " + mapName)
       self._triggerExploreStep()
@@ -44,33 +44,35 @@ class Control:
 
   def _executeExploreStep(self):
     if self._roboDriver.getStatus() is RoboStatus.IDLE:
-      nextDirection = _calcNextExploreStep()
+      nextDirection = self._calcNextExploreStep()
       logger.debug(self.roboName + "exploreStep, nextStep to be executed: " + str(nextDirection))
       if nextDirection:
         self._move(nextDirection)
 
-  def _calcNextExploreStep():
+  def _calcNextExploreStep(self):
     directions = self._map().getAvailableDirections()
     logger.debug(self.roboName + "calcNextExploreStep, available directions: " + str(directions))
 
     # find unexplored neighbours
-    unexplored = filter(lambda element: element.explored==False, directions)
-    if unexplored:
+    unexplored = list(filter(lambda element: element.explored==False, directions))
+    for it in unexplored:
+        logger.debug("item in unexplored: " + str(it.direction))
+    if len(unexplored):
       logger.debug(self.roboName + "calcNextExploreStep, unexplored list: " + str(unexplored))
-      sortedDir = unexplored.sort(key=lambda element: element.direction)
-      return sortedDir[0].direction
+      unexplored.sort(key=lambda element: DirectionSortOrder(element.direction))
+      return unexplored[0].direction
 
     # find closest unexplored child
-    unexploredChild = filter(lambda element: element.hasUnexploredChildren==True, directions)
+    unexploredChild = list(filter(lambda element: element.hasUnexploredChildren==True, directions))
     if unexploredChild:
       logger.debug(self.roboName + "calcNextExploreStep, unexploredChildren list: " + str(unexploredChild))
-      sortedDir = unexploredChild.sort(key=lambda element: element.distanceToUnexplored)
-      return sortedDir[0].direction
+      unexploredChild.sort(key=lambda element: element.distanceToUnexplored)
+      return unexploredChild[0].direction
 
     logger.info(self.roboName + "calcNextExploreStep, No unexplored neighbours or children!")
     return None
 
-  def _move(direction=RoboDirection.NORTH):
+  def _move(self, direction=RoboDirection.NORTH):
     nextPosition=self._map().getRobotLocation().move(direction)
     self._map().setRobotLocation(nextPosition)
     self._roboDriver.driveDirection(direction)

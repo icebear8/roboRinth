@@ -20,12 +20,15 @@ class MapMatcher:
 
     def onDirectionsCallback(self, mapName, availableColorsDict):
         roboMap = self._roboMaps[mapName]
-        mappedDirections = map(self.mapDirectionToVector, availableColorsDict.items())
+        mapFunction = lambda tup : self.mapDirectionToVector(tup)
+        mappedDirections = map(mapFunction, availableColorsDict.items())
         roboMap.addDirectionsAtCurrentLocation(mappedDirections)
         if self.onMapUpdate:
             self.onMapUpdate(mapName)
 
-    def mapDirectionToVector(self, direction, color):
+    def mapDirectionToVector(self, dirColTup):
+        direction, color = dirColTup
+        logger.debug("mapping direction " + str(direction))
         dx = 0
         dy = 0
         if direction == RoboDirection.NORTH:

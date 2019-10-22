@@ -11,3 +11,13 @@ class RoboDirection(Enum):
 class RoboStatus(Enum):
   IDLE = 1
   BUSY = 2
+
+def DirectionSortOrder(dir):
+  if dir == RoboDirection.NORTH:
+    return 1
+  elif dir == RoboDirection.EAST:
+    return 2
+  elif dir == RoboDirection.SOUTH:
+    return 3
+  else:
+    return 4
