@@ -20,8 +20,8 @@ class Control:
 
   def onHandleCrossingReached(self):
     print("onHandleCrossingReached")
-    action = self._path.handle_crossing_reached()
     self._server.send_update(self._map, self._path.get_current_position())
+    action = self._path.handle_crossing_reached()
     self.handle_action(action)
 
   def handle_action(self, action : Action):
