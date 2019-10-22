@@ -74,7 +74,7 @@ class DirectionController:
 
     def updateAngle(self, client, userdata, msg):
         self._rawAngle = userdata
-        if self._turnState == TurnState.TURN_ANGLE and self.correctedAngle() >= self._destinationAngle:
+        if self._turnState == TurnState.TURN_ANGLE and self.isAngleReached():
             self.processTurnEvent(TurnEvents.ANGLE_REACHED)
 
     def updateColor(self, msg):
@@ -124,6 +124,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('START_DISCOVERY, entry action')
+                self.processTurnEvent(TurnEvents.NEW_ANGLE, -10)
             else:
                 # recurring action
                 print('START_DISCOVERY, recurring action')
@@ -135,6 +136,7 @@ class DirectionController:
             else:
                 # recurring action
                 print('DISCOVERY, recurring action')
+                print('add color to list: ' + data)
 
         elif self._directionState == DirectionState.DISCOVERY_FINISHED:
             if self._directionState != oldDirectionState:
@@ -180,14 +182,17 @@ class DirectionController:
         elif self._turnState == TurnState.FINISHED:
             self._turnState = TurnState.IDLE
 
-
     def zeroAngle(self):
         self._angleOffset = self._rawAngle
-
 
     def correctedAngle(self):
         return self._rawAngle - self._angleOffset
 
-
     def roundedAngle(self):
         return round((self._rawAngle - self._angleOffset) / 90) * 90
+
+    def isAngleReached(self):
+        if self._destinationAngle < 0:
+            return self.correctedAngle() <= self._destinationAngle
+        else:
+            return self.correctedAngle() >= self._destinationAngle
