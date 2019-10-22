@@ -235,3 +235,10 @@ class DirectionController:
             return self.correctedAngle() <= self._destinationAngle
         else:
             return self.correctedAngle() >= self._destinationAngle
+
+    def dirMapToList(self, dirMap):
+        dirList = list()
+        for key, value in dirMap.items():
+            entry = [key, value]
+            dirList.append(entry)
+        return json.dumps(dirList)
