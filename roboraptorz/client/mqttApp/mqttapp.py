@@ -15,27 +15,6 @@ logger = logging.getLogger(__name__)
 
 client = None
 
-def _mqttCallbackSim(driver, client, userdata, msg):
-  logger.debug("_mqttCallbackSim topic: " + str(msg.topic) + " payload: " + str(msg.payload))
-  incomming = msg.payload.decode('utf-8')
-  logger.debug("_mqttCallbackSim incomming: " + incomming)
-
-  directions = []
-
-  if driver.onDirections is not None:
-
-    if incomming in ('north'):
-      directions.append(RoboDirection.NORTH)
-    elif incomming in ('east'):
-      directions.append(RoboDirection.EAST)
-    elif incomming  in ('south'):
-      directions.append(RoboDirection.SOUTH)
-    elif incomming  in ('west'):
-      directions.append(RoboDirection.WEST)
-
-  logger.debug("_mqttCallbackSim directions: " + str(directions))
-  driver.onDirections(directions)
-
 def _initializeLogging(loglevel):
   numeric_level = getattr(logging, loglevel.upper(), None)
   if not isinstance(numeric_level, int):
@@ -92,17 +71,14 @@ def main(argv):
   roboName="roboraptorz-0"
   roboDriver=RoboDriver(roboName)
   roboDriver.setMqttClient(client)
+  client.subscribeTopics(roboName + '/notification/#')
+  client.addMessageHandler(roboDriver.getMqttHandlerList())
+
   mapMatcher=MapMatcher()
   mapMatcher.registerRobotDriver(roboName, roboDriver)
+
   robots={}
-  robots[roboName]=roboControl=Control(roboName, mapMatcher, roboDriver)
-
-  callback = lambda client, userdata, msg : _mqttCallbackSim(roboDriver, client, userdata, msg)
-  simHandlers = {
-    roboName + "/notification/availableDirectionsMapTest": callback
-  }
-  client.addMessageHandler(simHandlers)
-
+  robots[roboName]=Control(roboName, mapMatcher, roboDriver)
   robots[roboName].start()
   # End test code
 

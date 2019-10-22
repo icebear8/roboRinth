@@ -50,7 +50,7 @@ class MqttClient:
 
 
 
-  def publish(self, a_topic, a_payload, a_retain=False):
+  def publish(self, a_topic, a_payload=None, a_retain=False):
     self._client.publish(topic=a_topic,payload=a_payload,retain=a_retain)
 
 
