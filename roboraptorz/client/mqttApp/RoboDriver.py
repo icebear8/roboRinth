@@ -84,7 +84,7 @@ class RoboDriver:
       loggerDrv.debug("Direction notification recieved")
       # TODO: evtl. check if correct topic
       dirDict = dict()
-      loggerDrv.debug("Payload: "+msg.payload.decode("utf-8"))
+      loggerDrv.info("Payload: "+msg.payload.decode("utf-8"))
       dirCol = json.loads(msg.payload.decode("utf-8"))
       for element in dirCol:
         # TODO: string to direction enum
@@ -109,7 +109,7 @@ class RoboDriver:
         self.onStatus(self._status)
 
     def mqtt_busy(self, client, user, msg):
-      print("Busy recieved")
+      loggerDrv.debug("Busy recieved")
       self._status = RoboStatus.BUSY
       self.onStatus(self._status)
 

@@ -62,15 +62,15 @@ class Control:
     self._timerExplorePending = False
     if self._roboDriver.getStatus() is RoboStatus.IDLE:
       nextDirection = self._calcNextExploreStep()
-      logger.debug(self.roboName + "exploreStep, nextStep to be executed: " + str(nextDirection))
+      logger.info(self.roboName + "exploreStep, nextStep to be executed: " + str(nextDirection))
       if nextDirection:
         self._move(nextDirection)
 
   def _calcNextExploreStep(self):
     directions = self._map().getAvailableDirections()
-    logger.debug(self.roboName + " calcNextExploreStep, available directions count: " + str(len(directions)) + " :")
+    logger.info(self.roboName + " calcNextExploreStep, available directions count: " + str(len(directions)) + " :")
     for dir in directions:
-        logger.debug("\t" + str(dir))
+        logger.info("\t" + str(dir))
     # find unexplored neighbours
     unexplored = list(filter(lambda element: element.explored==False, directions))
     if len(unexplored):
@@ -93,6 +93,7 @@ class Control:
     return None
 
   def _move(self, direction=RoboDirection.NORTH):
+    logger.info("moving in direction: " + DirToStr(direction))
     nextPosition=self._map().getRobotLocation().move(direction)
     self._map().setRobotLocation(nextPosition)
     self._roboDriver.driveDirection(direction)

@@ -28,7 +28,7 @@ def main(argv):
   parser.add_argument('--host', type=str, help='host of the mqtt broker to connect', default = "192.168.0.200")
   parser.add_argument('--port', type=int, default=1883, help='port of the mqtt broker to connect')
   parser.add_argument('--clientId', type=str, default="", help='MQTT client connection id')
-  parser.add_argument('--log', type=str, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="DEBUG", help='Loglevel ')
+  parser.add_argument('--log', type=str, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="INFO", help='Loglevel ')
 
   args = parser.parse_args()
 
