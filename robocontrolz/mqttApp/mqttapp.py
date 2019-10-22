@@ -72,11 +72,14 @@ def main(argv):
     if len(tokens) >= 1:
       if tokens[0] == "disco":
         client._client.publish("robo-01/request/discoverDirections")
-      elif tokens[0] == "turn" and len(tokens) >=2:
-        client._client.publish("robo-01/request/driveDirectionsRaw", tokens[1])
+      elif tokens[0] == "turn" and len(tokens) >= 2:
+        client._client.publish("robo-01/request/driveDirectionsRaw", list(tokens[1]))
       elif tokens[0] == "reached":
         dirCtrl.posReached()
-
+      elif tokens[0] == 'color' and len(tokens) >= 2:
+        client._client.publish("robo-01/notification/color/name", tokens[1])
+      elif tokens[0] == 'angle' and len(tokens) >= 2:
+        client._client.publish("robo-01/notifiction/gyro/angle", tokens[1])
 
   # Terminate
   client.stop()

@@ -78,7 +78,7 @@ class DirectionController:
         print('new color')
         if userdata != self._lastColor:
             self._lastColor = userdata
-            self.processEvent(DirectionEvents.NEW_COLOR)
+            self.processEvent(DirectionEvents.NEW_COLOR, None)
 
 
     def processEvent(self, event, data):
@@ -117,7 +117,7 @@ class DirectionController:
         # actions
         # IDLE
         if self._directionState == DirectionState.IDLE:
-            print('nothing to do')
+            print('IDLE, nothing to do')
         # DISCOVERY
         elif self._directionState == DirectionState.START_DISCOVERY:
             if self._directionState != oldState:
@@ -137,6 +137,7 @@ class DirectionController:
             if self._directionState != oldState:
                 # entry action
                 print('DISCOVERY_FINISHED, entry action')
+                self.processEvent(None, None)
             else:
                 # recurring action
                 print('DISCOVERY_FINISHED, recurring action')
@@ -152,6 +153,7 @@ class DirectionController:
             if self._directionState != oldState:
                 # entry action
                 print('TURN_FINISHED, entry action')
+                self.processEvent(None, None)
             else:
                 # recurring action
                 print('TURN_FINISHED, recurring action')
