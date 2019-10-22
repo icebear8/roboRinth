@@ -3,6 +3,7 @@
 import argparse
 import logging
 import time
+import sys
 import threading
 from MqttHandler import MqttHandler
 
@@ -21,16 +22,19 @@ def _initializeLogging(loglevel):
 def mapPrinter(map):
   global running
 
-  while (running):
-    lines = map.asciiDraw()
-    for i in range(len(lines)):
-      # move up characters
-      print("\033[F")
+  with open("map.txt", "w") as fd:
+    while (running):
+      lines = map.asciiDraw()
+      for i in range(len(lines)):
+        pass
+        # move up characters
+        fd.write("\033[F")
+        fd.flush()
 
-    for line in lines:
-      print("".join(line))
+      for line in lines:
+        fd.write("".join(line) + "\n")
 
-    time.sleep(1)
+      time.sleep(1)
 
 def main():
   global running
