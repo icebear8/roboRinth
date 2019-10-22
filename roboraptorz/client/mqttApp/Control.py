@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 class Control:
   def __init__(self, roboName, mapMatcher, roboDriver):
     self.roboName=roboName
+    self._timerExplorePending = False
+    self._controlMode=ControlMode.SCOUTING
 
     self._roboDriver=roboDriver
     self._roboDriver.onStatus=self._onRoboStatus
@@ -18,13 +20,14 @@ class Control:
     self._mapMatcher=mapMatcher
     self._mapMatcher.onMapUpdate=self._onMapUpdate
 
-    self._timerPending = False
+
 
   def start(self):
     startPoint = Point(0,0)
     self._map().setStartPoint(startPoint)
     self._map().setRobotLocation(startPoint)
-    #self._roboDriver.discoverMode(True)
+    if self._roboDriver.getStatus() is RoboStatus.IDLE:
+      self._roboDriver.discoverMode(True)
 
   def _map(self):
     return self._mapMatcher.getMap(self.roboName)
@@ -41,18 +44,22 @@ class Control:
   # Callbacks driver
   def _onRoboStatus(self, status):
     logger.debug(self.roboName + "OnRoboStatus: " + str(status))
-    if (status is RoboStatus.IDLE) and (self._roboDriver.getDiscoverMode() is True):
-      self._triggerExploreStep()
-
+    if (status is RoboStatus.IDLE):
+      if self._controlMode is ControlMode.SCOUTING:
+        if self._roboDriver.getDiscoverMode() is False:
+          logger.debug(self.roboName + "OnRoboStatus: Enable discover mode")
+          self._roboDriver.discoverMode(True)
+        else:
+          self._triggerExploreStep()
 
   def _triggerExploreStep(self):
-    if not self._timerPending:
-      self._timerPending = True
+    if not self._timerExplorePending:
+      self._timerExplorePending = True
       timer = threading.Timer(1.0, self._executeExploreStep)
       timer.start()
 
   def _executeExploreStep(self):
-    self._timerPending = False
+    self._timerExplorePending = False
     if self._roboDriver.getStatus() is RoboStatus.IDLE:
       nextDirection = self._calcNextExploreStep()
       logger.debug(self.roboName + "exploreStep, nextStep to be executed: " + str(nextDirection))

@@ -1,6 +1,10 @@
 
 from enum import Enum
 
+class ControlMode(Enum):
+  SCOUTING = 1
+  NAVIGATING = 2
+
 # Abstracted direction of the robot to be used between RoboDriver and App
 class RoboDirection(Enum):
   NORTH = 1
