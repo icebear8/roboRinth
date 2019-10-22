@@ -23,6 +23,10 @@ mqttSubscriptions = [
   _roboName+"/request/discover",
   _roboName+"/notification/color/name",
   _roboName+"/request/driveDirectionsRaw"
+  "robo-01/notification/color/name",
+  "robo-01/notification/gyro/angle",
+  "robo-01/request/discoverDirections",
+  "robo-01/request/driveDirectionsRaw"
 
 ]
 

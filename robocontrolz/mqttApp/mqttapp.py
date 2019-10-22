@@ -6,6 +6,7 @@ import sys
 import time
 
 from MqttClient import MqttClient
+from MqttClient import dirCtrl
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,19 @@ def main(argv):
   client.startAsync()
   time.sleep(2)
 
-  input("\n\nPress Enter to abort...\n\n")
+  cmd = " "
+  while cmd != "quit":
+
+    cmd = input("\n\nEnter quit to abort\n\n")
+    tokens = cmd.split(" ")
+    if len(tokens) >= 1:
+      if tokens[0] == "disco":
+        client._client.publish("robo-01/request/discoverDirections")
+      elif tokens[0] == "turn" and len(tokens) >=2:
+        client._client.publish("robo-01/request/driveDirectionsRaw", tokens[1])
+      elif tokens[0] == "reached":
+        dirCtrl.posReached()
+
 
   # Terminate
   client.stop()

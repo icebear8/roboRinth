@@ -47,7 +47,6 @@ class DirectionController:
         self._turnState = TurnState.IDLE
         self._name = 'direction controller'
 
-
     def discover(self, client, userdata, msg):
         print('discover')
         if self._directionState == DirectionState.IDLE:
@@ -65,6 +64,8 @@ class DirectionController:
         else:
             print('error: robot busy, turn not allowed')
 
+    def posReached(self):
+        self.processEvent(DirectionEvents.POS_REACHED, 0)
 
     def updateAngle(self, client, userdata, msg):
         print('new angle')
@@ -154,6 +155,8 @@ class DirectionController:
             else:
                 # recurring action
                 print('TURN_FINISHED, recurring action')
+
+
 
 
     def zeroAngle(self):
