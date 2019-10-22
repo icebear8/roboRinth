@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Set, List
-from app.map import Direction, Position, Position, Node
+from typing import Set
+from app.map import Direction, Position, Node
 
 
 class Action(Enum):
@@ -12,47 +12,49 @@ class Action(Enum):
 
 
 class PathDiscovery:
-    def __init__(self, map):
-        self.__map = map
-        self.__currentNode = map.get_node(Position(0, 0))
+    def __init__(self, refmap):
+        self.__map = refmap
+        self.__currentNode = refmap.get_node(Position(0, 0))
         self.__currentDirection = Direction.NORTH
+        self.__pathList = []
+        self.__currentNode = None
 
-    def handleCrossingReached(self) -> Action:
+    def handle_crossing_reached(self) -> Action:
         if self.__currentNode.visited:
-            returnDirection = self.__calculateDirection(self.__currentNode, self.pathList.pop())
-            action = self.__convertDirectionToAction(returnDirection)
-            self.__setNewPosition(self.__convertActionToDirection(action))
+            return_direction = self.__calculate_direction(self.__currentNode, self.__pathList.pop())
+            action = self.__convert_direction_to_action(return_direction)
+            self.__set_new_position(self.__convert_action_to_direction(action))
             return action
         else:
             return Action.doDiscovery
 
-    def handleDiscoveryFinished(self) -> Action:
-        newDirections = self.__map.get_unvisited_directions(self.__currentNode.position)
-        action = self.__convertDirectionToAction(self.__getMostLeftDirection(newDirections))
-        if (action == None):
-            returnDirection = self.__calculateDirection(self.__currentNode, self.pathList.pop())
-            action = self.__convertDirectionToAction(returnDirection)
+    def handle_discovery_finished(self) -> Action:
+        new_directions = self.__map.get_unvisited_directions(self.__currentNode.position)
+        action = self.__convert_direction_to_action(self.__get_most_left_direction(new_directions))
+        if action is None:
+            returnDirection = self.__calculate_direction(self.__currentNode, self.__pathList.pop())
+            action = self.__convert_direction_to_action(returnDirection)
 
-        self.__setNewPosition(self.__convertActionToDirection(action))
+        self.__set_new_position(self.__convert_action_to_direction(action))
         return action
 
-    def __setNewPosition(self, direction: Direction):
-        self.pathList.append(self.__currentNode)
-        newPos = self.__currentNode.position.new_pos_in_direction(direction, 1);
+    def __set_new_position(self, direction: Direction):
+        self.__pathList.append(self.__currentNode)
+        newPos = self.__currentNode.position.new_pos_in_direction(direction, 1)
         self.__currentNode = self.__map.get_node(newPos)
         self._currentDirection = direction
 
-    def __calculateDirection(self, A: Node, B: Node) -> Direction:
-        if (A.position.x > B.position.x):
+    def __calculate_direction(self, a: Node, b: Node) -> Direction:
+        if a.position.x > b.position.x:
             return Direction.WEST
-        elif (A.position.x < B.position.x):
+        elif a.position.x < b.position.x:
             return Direction.EAST
-        elif (A.position.y > B.position.y):
+        elif a.position.y > b.position.y:
             return Direction.NORTH
         else:
             return Direction.SOUTH
 
-    def __convertDirectionToAction(self, dir: Direction) -> Action:
+    def __convert_direction_to_action(self, dir: Direction) -> Action:
         lookup = {Direction.NORTH: Action.goNorth,
                   Direction.EAST: Action.goEast,
                   Direction.SOUTH: Action.goSouth,
@@ -61,7 +63,7 @@ class PathDiscovery:
                   }
         return lookup[dir]
 
-    def __convertActionToDirection(self, action: Action) -> Direction:
+    def __convert_action_to_direction(self, action: Action) -> Direction:
         lookup = {
             Action.goNorth: Direction.NORTH,
             Action.goEast: Direction.EAST,
@@ -70,31 +72,26 @@ class PathDiscovery:
         }
         return lookup[action]
 
-    def __getMostLeftDirection(self, directions: Set[Direction]) -> Direction:
-        ret = None
+    def __get_most_left_direction(self, directions: Set[Direction]) -> Direction:
         if Direction((int(self.__currentDirection) + int(Direction.WEST)) % 4) in directions:
-            ret = self.Direction((int(self.__currentDirection) + int(Direction.WEST)) % 4)
+            ret = Direction((int(self.__currentDirection) + int(Direction.WEST)) % 4)
         elif self.__currentDirection in directions:
             ret = self.__currentDirection
-        elif Direction(int((self.__currentDirection) + int(Direction.EAST)) % 4) in directions:
-            ret = Direction(int((self.__currentDirection) + int(Direction.EAST)) % 4)
+        elif Direction(int(self.__currentDirection + int(Direction.EAST)) % 4) in directions:
+            ret = Direction(int(self.__currentDirection + int(Direction.EAST)) % 4)
         else:
-            ret = None;
+            ret = None
         return ret
-
-    __pathList = []
-    __currentNode = None
-    __currentDirection = None
 
 
 class PathSimple:
     def __init__(self):
         pass
 
-    def handleCrossingReached(self):
+    def handle_crossing_reached(self):
         pass
 
-    def handleDiscoveryFinished(self):
+    def handle_discovery_finished(self):
         pass
 
 
@@ -102,8 +99,8 @@ class PathFastReturn:
     def __init__(self):
         pass
 
-    def handleCrossingReached(self):
+    def handle_crossing_reached(self):
         pass
 
-    def handleDiscoveryFinished(self):
+    def handle_discovery_finished(self):
         pass
