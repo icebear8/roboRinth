@@ -5,6 +5,11 @@ from matrix import Matrix
 logger = logging.getLogger(__name__)
 
 class Robot(object):
+
+    INIT_TIME_S = 2
+    MOVING_TIME_S = 0.5
+    DISCOVER_TIME_S = 0.5
+
     def __init__(self, map, globalPosition, rotLocToGlob, rotGlobToLoc):
         self.map = map
         self.globalPosition = globalPosition
@@ -40,7 +45,7 @@ class Robot(object):
     def init(self):
         logger.debug("Got Init")
         self.sendBusy()
-        timer = threading.Timer(2, self.onInit)
+        timer = threading.Timer(Robot.INIT_TIME_S, self.onInit)
         timer.start()
 
     def onInit(self):
@@ -61,7 +66,7 @@ class Robot(object):
 
         if self.moveLocal(v):
             logger.debug("moving %s"%(direction))
-            timer = threading.Timer(2, self.onDriveDirections)
+            timer = threading.Timer(Robot.MOVING_TIME_S, self.onDriveDirections)
             timer.start()
         else:
             logger.warn("moving failed")
@@ -73,7 +78,7 @@ class Robot(object):
     def discoverDirections(self):
         logger.debug("Got discoverDirections")
         self.sendBusy()
-        timer = threading.Timer(2, self.onDisconverDirections)
+        timer = threading.Timer(Robot.DISCOVER_TIME_S, self.onDisconverDirections)
         timer.start()
 
     def onDisconverDirections(self):
