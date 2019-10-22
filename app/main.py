@@ -1,15 +1,15 @@
 import asyncio
 from control import Control
-from map import Map
+from graphmap import GraphMap
 from mqttclient_simulator import MqttClientSimulator
-from Path import PathDiscovery
+from pathdiscovery import PathDiscovery
 from websocket_server import WebSocketServer
 
 
 def test_simulator():
     client = MqttClientSimulator(sleep_time=1)
 
-    theMap = Map()
+    theMap = GraphMap()
     path = PathDiscovery(theMap)
     server = WebSocketServer()
     control = Control(theMap, client, path, server)

@@ -1,6 +1,7 @@
 import asyncio
 
-from map import Direction, Position
+from position import Position
+from direction import Direction
 
 
 class MqttClientSimulator:

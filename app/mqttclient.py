@@ -2,7 +2,7 @@
 import logging
 import random
 import sys
-from map import Direction
+from direction import Direction
 import json
 import paho.mqtt.client as mqtt
 

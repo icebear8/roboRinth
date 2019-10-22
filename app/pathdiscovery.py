@@ -1,6 +1,8 @@
 from enum import Enum, IntEnum
 from typing import Set
-from map import Direction, Position, Node
+from graphmap import Node
+from position import Position
+from direction import Direction
 
 
 class Action(IntEnum):

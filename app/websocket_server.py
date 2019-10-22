@@ -2,7 +2,8 @@ import asyncio
 import json
 import websockets
 
-from map import Map, Edge, Position
+from graphmap import GraphMap, Edge
+from position import Position
 
 
 class WebSocketServer:
@@ -11,7 +12,7 @@ class WebSocketServer:
         self.__server = websockets.serve(self.__handle_connection, "localhost", 8765)
         asyncio.get_event_loop().run_until_complete(self.__server)
 
-    def send_update(self, robo_map: Map, current_position: Position):
+    def send_update(self, robo_map: GraphMap, current_position: Position):
         def format_pos(position: Position):
             return {
                 "x": position.x,

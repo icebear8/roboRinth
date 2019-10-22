@@ -2,10 +2,10 @@
 import logging
 import random
 import sys
-from map import Map
-from map import Position
-from map import Direction
-from Path import PathDiscovery, Action
+from graphmap import GraphMap
+from position import Position
+from direction import Direction
+from pathdiscovery import PathDiscovery, Action
 
 logger = logging.getLogger(__name__)
 
