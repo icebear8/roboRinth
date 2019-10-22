@@ -18,6 +18,8 @@ class Control:
     self._mapMatcher=mapMatcher
     self._mapMatcher.onMapUpdate=self._onMapUpdate
 
+    self._timerPending = False
+
   def start(self):
     self._map().setRobotLocation(Point(0,0))
     #self._roboDriver.discoverMode(True)
@@ -42,10 +44,13 @@ class Control:
 
 
   def _triggerExploreStep(self):
-    timer = threading.Timer(1.0, self._executeExploreStep)
-    timer.start()
+    if not self._timerPending:
+      self._timerPending = True
+      timer = threading.Timer(1.0, self._executeExploreStep)
+      timer.start()
 
   def _executeExploreStep(self):
+    self._timerPending = False
     if self._roboDriver.getStatus() is RoboStatus.IDLE:
       nextDirection = self._calcNextExploreStep()
       logger.debug(self.roboName + "exploreStep, nextStep to be executed: " + str(nextDirection))
