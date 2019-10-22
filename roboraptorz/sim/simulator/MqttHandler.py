@@ -50,7 +50,8 @@ class RobotForwarder(object):
 
     if len(data) > 1:
       logger.warn("driveHandler has too many items")
-    self.robot.moveLocal(data[0])
+    logger.debug("Got drive on %s payload: %s"%(self.topicPrefix, str(msg.payload)))
+    self.robot.driveDirections(data[0])
 
   def notify(self, simpleTopic, msg):
     self._notify(self._notifications[simpleTopic], msg)

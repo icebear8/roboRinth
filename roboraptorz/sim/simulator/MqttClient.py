@@ -47,7 +47,7 @@ class MqttClient:
       self._client.message_callback_add(handler, handlers[handler])
 
   def _notify(self, topic, msg):
-    self._client.publish(topic, msg, qos=0, retain=True)
+    self._client.publish(topic, msg, qos=0, retain=False)
 
   def _onConnect(self, client, userdata, flags, rc):
     logger.debug("Connected with result code " + str(rc))

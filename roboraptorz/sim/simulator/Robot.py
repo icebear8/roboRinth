@@ -39,6 +39,7 @@ class Robot(object):
 
     def init(self):
         logger.debug("Got Init")
+        self.sendBusy()
         timer = threading.Timer(2, self.onInit)
         timer.start()
 
@@ -82,7 +83,6 @@ class Robot(object):
     def moveGlobal(self, direction):
         if self.map.isConnection(self.globalPosition, direction):
             self.globalPosition += direction
-            self.map.draw()
             return True
         return False
 
