@@ -20,21 +20,26 @@ class PathDiscovery:
 
     def handle_crossing_reached(self) -> Action:
         if self.__currentNode.visited:
-            return_direction = self.__calculate_direction(self.__currentNode, self.__pathList.pop())
-            action = self.__convert_direction_to_action(return_direction)
-            self.__set_new_position(self.__convert_action_to_direction(action))
+            action = self.__discovery_step()
             return action
         else:
             return Action.doDiscovery
 
     def handle_discovery_finished(self) -> Action:
+        action = self.__forward_step()
+        return action
+
+    def __forward_step(self) -> Action:
         new_directions = self.__map.get_unvisited_directions(self.__currentNode.position)
         action = self.__convert_direction_to_action(self.__get_most_left_direction(new_directions))
         if action is None:
-            returnDirection = self.__calculate_direction(self.__currentNode, self.__pathList.pop())
-            action = self.__convert_direction_to_action(returnDirection)
-
+            action = self.__return_step()
         self.__set_new_position(self.__convert_action_to_direction(action))
+        return action
+
+    def __return_step(self) -> Action:
+        returnDirection = self.__calculate_direction(self.__currentNode, self.__pathList.pop())
+        action = self.__convert_direction_to_action(returnDirection)
         return action
 
     def __set_new_position(self, direction: Direction):
