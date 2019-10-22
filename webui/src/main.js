@@ -24,6 +24,7 @@ function initNetwork() {
         },
         interaction: {
             dragNodes: false,
+            selectable: false,
         }
     };
     network = new vis.Network(($('#network'))[0], data, options);
