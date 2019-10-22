@@ -6,14 +6,13 @@ import sys
 import paho.mqtt.client as mqtt
 from FollowLine import followLine
 
-f = followLine()
-
 import Handlers as handler
 from DirectionController import DirectionController
 
 logger = logging.getLogger(__name__)
 
 dirCtrl = DirectionController()
+f = followLine()
 
 _defaultHost="localhost"
 _defaultPort=1883
@@ -47,7 +46,9 @@ class MqttClient:
     self._port = port
     self._keepalive = 60
 
-    self._client = mqtt.Client(client_id=clientId, clean_session=True, userdata=f)
+    userdata.followLine = f
+    userdata.directionContoller = dirCtrl
+    self._client = mqtt.Client(client_id=clientId, clean_session=True, userdata=userdata)
     self._client.on_connect = self._onConnect
     self._client.on_subscribe = self._onSubscribe
     self._client.on_unsubscribe = self._onUnsubscribe
