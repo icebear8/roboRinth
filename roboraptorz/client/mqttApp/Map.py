@@ -32,7 +32,8 @@ class Point:
             dy = 0;
         return Point(self.x + dx, self.y + dy)
 
-
+    def __str__(self):
+        return "(x: " + str(self.x) + ", y: " + str(self.y) + ")"
 
     def __key(self):
         return (self.x, self.y)
@@ -51,6 +52,9 @@ class RelativeDirection:
     def __init__(self, dx, dy):
         self.dx = dx
         self.dy = dy
+
+    def __str__(self):
+        return "(dx: " + str(self.dx) + ", dy: " + str(self.dy) + ")"
 
     def __key(self):
         return (self.dx, self.dy)
@@ -124,11 +128,14 @@ class Map:
         loc = self._roboLocation
         curentNode = self.mapPoints[loc]
         availableDirections = curentNode.availableDirections
-        logger.debug("getAvailableDirec")
+        logger.debug("getAvailableDirections at location " + str(loc))
         result = []
         for dir in availableDirections:
+            logger.debug("available direction " + DirToStr(self.parseDirection(dir)))
             newPoint = Point(loc.x + dir.dx, loc.y + dir.dy)
+            logger.debug("next possible point: " + str(newPoint))
             if newPoint in self.mapPoints:
+                logger.debug("next possible point was visited")
                 nextNode = self.mapPoints[newPoint]
                 hasUnexploredChildren, distance = self._hasNodeUnexploredChildren(nextNode)
                 availableDirection = AvailableDirection()
@@ -137,11 +144,13 @@ class Map:
                 availableDirection.distanceToUnexplored = distance
                 result.append(availableDirection)
             else:
+                logger.debug("next possible point was not visited")
                 availableDirection = AvailableDirection()
                 availableDirection.direction = self.parseDirection(dir)
                 availableDirection.explored = False
                 availableDirection.distanceToUnexplored = 0
                 result.append(availableDirection)
+        logger.debug("found " + str(len(result)) + " available directions")
         return result
 
     def _hasNodeUnexploredChildren(self, node):

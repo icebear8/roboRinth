@@ -51,21 +51,18 @@ class Control:
 
   def _calcNextExploreStep(self):
     directions = self._map().getAvailableDirections()
-    logger.debug(self.roboName + "calcNextExploreStep, available directions: " + str(directions))
-
+    logger.debug(self.roboName + "calcNextExploreStep, available directions count: " + str(len(directions)))
     # find unexplored neighbours
     unexplored = list(filter(lambda element: element.explored==False, directions))
-    for it in unexplored:
-        logger.debug("item in unexplored: " + str(it.direction))
     if len(unexplored):
-      logger.debug(self.roboName + "calcNextExploreStep, unexplored list: " + str(unexplored))
+      logger.debug(self.roboName + "calcNextExploreStep, unexplored list count: " + str(len(unexplored)))
       unexplored.sort(key=lambda element: DirectionSortOrder(element.direction))
       return unexplored[0].direction
 
     # find closest unexplored child
     unexploredChild = list(filter(lambda element: element.hasUnexploredChildren==True, directions))
     if unexploredChild:
-      logger.debug(self.roboName + "calcNextExploreStep, unexploredChildren list: " + str(unexploredChild))
+      logger.debug(self.roboName + "calcNextExploreStep, unexploredChildren list count: " + str(len(unexploredChild)))
       unexploredChild.sort(key=lambda element: element.distanceToUnexplored)
       return unexploredChild[0].direction
 

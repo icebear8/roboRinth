@@ -21,3 +21,13 @@ def DirectionSortOrder(dir):
     return 3
   else:
     return 4
+
+def DirToStr(dir):
+  if dir == RoboDirection.NORTH:
+    return "NORTH"
+  elif dir == RoboDirection.EAST:
+    return "EAST"
+  elif dir == RoboDirection.SOUTH:
+    return "SOUTH"
+  else:
+    return "WEST"

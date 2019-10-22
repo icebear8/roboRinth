@@ -19,6 +19,7 @@ class MapMatcher:
         robotDriver.onColors = callback
 
     def onDirectionsCallback(self, mapName, availableColorsDict):
+        logger.debug("onDirectionsCallback")
         roboMap = self._roboMaps[mapName]
         mapFunction = lambda tup : self.mapDirectionToVector(tup)
         mappedDirections = map(mapFunction, availableColorsDict.items())
