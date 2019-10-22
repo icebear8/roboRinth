@@ -14,11 +14,11 @@ def handleColor(client, userdata, msg):
 def handleStartDriving(client, userdata, msg):
   logger.debug("StartDrive: " + str(msg.payload.decode("utf-8")))
   userdata['directionController'].turn(msg.payload.decode("utf-8"))
-  # userdata['followLine'].handleStartDriving(msg.payload.decode("utf-8"))
+  #userdata['followLine'].handleStartDriving(msg.payload.decode("utf-8"))
 
 def handleMotorPosition(client, userdata, msg):
   logger.debug("MotorPosition:" + msg.topic + " " + str(msg.payload.decode("utf-8")))
-  # userdata.updateMotorPosition()
+  # userdata['followLine'].updateMotorPosition()
 
 def handleInit(client, userdata, msg):
   userdata['directionController'].init()
