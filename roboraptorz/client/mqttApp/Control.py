@@ -21,7 +21,9 @@ class Control:
     self._timerPending = False
 
   def start(self):
-    self._map().setRobotLocation(Point(0,0))
+    startPoint = Point(0,0)
+    self._map().setStartPoint(startPoint)
+    self._map().setRobotLocation(startPoint)
     #self._roboDriver.discoverMode(True)
 
   def _map(self):

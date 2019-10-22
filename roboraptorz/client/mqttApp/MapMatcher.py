@@ -21,14 +21,23 @@ class MapMatcher:
     def onDirectionsCallback(self, mapName, availableColorsDict):
         logger.debug("onDirectionsCallback")
         roboMap = self._roboMaps[mapName]
-        mapFunction = lambda tup : self.mapDirectionToVector(tup)
+        mapFunction = lambda tup : self.mapDirectionAndColorToVectorAndColor(tup)
         mappedDirections = map(mapFunction, availableColorsDict.items())
         roboMap.addDirectionsAtCurrentLocation(mappedDirections)
         if self.onMapUpdate:
             self.onMapUpdate(mapName)
 
-    def mapDirectionToVector(self, dirColTup):
+    def mapDirectionAndColorToVectorAndColor(self, dirColTup):
         direction, color = dirColTup
+        mappedColor = LineColor.Black
+        logger.debug("mapping color: " + color)
+        if color == "R":
+            mappedColor = LineColor.Red
+        elif color == "B":
+            mappedColor = LineColor.Black
+        else:
+            mappedColor = LineColor.Yellow
+
         logger.debug("mapping direction " + str(direction))
         dx = 0
         dy = 0
@@ -44,4 +53,4 @@ class MapMatcher:
         else:
             dx = -1
             dy = 0
-        return RelativeDirection(dx, dy)
+        return (RelativeDirection(dx, dy), mappedColor)

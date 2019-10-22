@@ -12,6 +12,19 @@ class RoboStatus(Enum):
   IDLE = 1
   BUSY = 2
 
+class LineColor(Enum):
+  Black = 1
+  Yellow = 2
+  Red = 3
+
+def LineColorToStr(lineColor):
+  if lineColor == LineColor.Black:
+    return "Black"
+  elif lineColor == LineColor.Red:
+    return "Red"
+  else:
+    return "Yellow"
+
 def DirectionSortOrder(dir):
   if dir == RoboDirection.NORTH:
     return 1

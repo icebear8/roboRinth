@@ -70,6 +70,7 @@ class AvailableDirection:
         self.direction = RoboDirection.NORTH
         self.explored = False
         self.distanceToUnexplored = -1
+        self.LineColor = LineColor.Black
 
     def hasUnexploredChildren(self):
         if self.distanceToUnexplored == -1:
@@ -77,7 +78,7 @@ class AvailableDirection:
         return True
 
     def __str__(self):
-        return "AvDir(dir: " + DirToStr(self.direction) + ", explored: " + str(self.explored) + ", distance: " + str(self.distanceToUnexplored) + ", hasUnexpChildren: " + str(self.hasUnexploredChildren()) + ")"
+        return "AvDir(dir: " + DirToStr(self.direction) + ", lineColor: " + LineColorToStr(self.LineColor) + ", explored: " + str(self.explored) + ", distance: " + str(self.distanceToUnexplored) + ", hasUnexpChildren: " + str(self.hasUnexploredChildren()) + ")"
 
 class Map:
     ROBOT_LOCATION_KEY = "robotLocation"
@@ -90,9 +91,9 @@ class Map:
             self.isExplored = False
             self.availableDirections = []
 
-        def addAvailableDirection(self, direction):
-            if not(direction in self.availableDirections):
-                self.availableDirections.append(direction)
+        def addAvailableDirection(self, directionWithColor):
+            if not(directionWithColor in self.availableDirections):
+                self.availableDirections.append(directionWithColor)
 
     def __init__(self, mapName):
         initalLocation = Point(0,0)
@@ -101,12 +102,13 @@ class Map:
         self.mapPoints = { initalLocation: self.MapNode(initalLocation)}
         self.pointsOfInterest = {}
 
-    def addDirectionsAtCurrentLocation(self, directions):
+    def addDirectionsAtCurrentLocation(self, directionsWithColors):
         point = self.getRobotLocation()
         mapPoint = self.mapPoints[point]
-        for direction in directions:
-            logger.debug(self._mapName + ": setting connection from (" + str(point.x) + "," + str(point.y) + ") to (" + str(direction.dx) + "," + str(direction.dy) + ")")
-            mapPoint.addAvailableDirection(direction)
+        for directionWithColor in directionsWithColors:
+            direction, color = directionWithColor
+            logger.debug(self._mapName + ": setting connection from (" + str(point.x) + "," + str(point.y) + ") to (" + str(direction.dx) + "," + str(direction.dy) + ") with color " + LineColorToStr(color))
+            mapPoint.addAvailableDirection(directionWithColor)
 
     def setRobotLocation(self, point):
         logger.debug(self._mapName + ": setting robot location at (" + str(point.x) + "," + str(point.y) + ")")
@@ -133,8 +135,8 @@ class Map:
         availableDirections = curentNode.availableDirections
         logger.debug("getAvailableDirections at location " + str(loc))
         result = []
-        for dir in availableDirections:
-            logger.debug("available direction " + DirToStr(self.parseDirection(dir)))
+        for dir, color in availableDirections:
+            logger.debug("available direction " + DirToStr(self.parseDirection(dir)) + " with color " + LineColorToStr(color))
             newPoint = Point(loc.x + dir.dx, loc.y + dir.dy)
             logger.debug("next possible point: " + str(newPoint))
             if newPoint in self.mapPoints:
@@ -145,6 +147,7 @@ class Map:
                 availableDirection.direction = self.parseDirection(dir)
                 availableDirection.explored = nextNode.isExplored
                 availableDirection.distanceToUnexplored = distance
+                availableDirection.LineColor = color
                 result.append(availableDirection)
             else:
                 logger.debug("next possible point was not visited")
@@ -152,6 +155,7 @@ class Map:
                 availableDirection.direction = self.parseDirection(dir)
                 availableDirection.explored = False
                 availableDirection.distanceToUnexplored = 0
+                availableDirection.LineColor = color
                 result.append(availableDirection)
         logger.debug("found " + str(len(result)) + " available directions")
         return result
@@ -175,7 +179,7 @@ class Map:
                     hasUnexploredAncestor = True
                     distances.append(dist)
 
-                for dir in currentNode.availableDirections:
+                for dir, color in currentNode.availableDirections:
                     nextPoint = Point(currentPoint.x + dir.dx, currentPoint.y + dir.dy)
                     if nextPoint in visitedPoints:
                         continue
