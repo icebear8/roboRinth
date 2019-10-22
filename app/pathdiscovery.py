@@ -61,10 +61,6 @@ class PathDiscovery:
         print("PATH: forward")
         new_directions = self.__map.get_unvisited_directions(self.__current_position)
         print(new_directions)
-        if action is None:
-            action = self.__return_step()
-        else:
-            self.__set_new_position(self.convert_action_to_direction(action))
         if new_directions:
             dir1 = self.__get_most_left_direction(new_directions)
             action = Action.from_direction(dir1)
