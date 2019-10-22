@@ -65,7 +65,7 @@ class Robot(object):
             v = Matrix._makeMatrix([[0], [1]])
 
         if self.moveLocal(v):
-            logger.debug("moving %s"%(direction))
+            logger.info("moving %s"%(direction))
             timer = threading.Timer(Robot.MOVING_TIME_S, self.onDriveDirections)
             timer.start()
         else:
