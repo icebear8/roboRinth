@@ -22,11 +22,9 @@ mqttSubscriptions = [
   #_roboName+"/notification/#",
   _roboName+"/request/discover",
   _roboName+"/notification/color/name",
-  _roboName+"/request/driveDirectionsRaw"
-  "robo-01/notification/color/name",
-  "robo-01/notification/gyro/angle",
-  "robo-01/request/discoverDirections",
-  "robo-01/request/driveDirectionsRaw"
+  _roboName+"/request/driveDirectionsRaw",
+  _roboName+"/notification/gyro/angle",
+  _roboName+"/request/discoverDirections",
 
 ]
 
@@ -50,8 +48,10 @@ class MqttClient:
     self._port = port
     self._keepalive = 60
 
-    userdata.followLine = f
-    userdata.directionContoller = dirCtrl
+    userdata = dict()
+
+    userdata['followLine'] = f
+    userdata['directionController'] = dirCtrl
     self._client = mqtt.Client(client_id=clientId, clean_session=True, userdata=userdata)
     self._client.on_connect = self._onConnect
     self._client.on_subscribe = self._onSubscribe
@@ -59,6 +59,7 @@ class MqttClient:
     self._client.on_disconnect = self._onDisconnect
     self._client.on_message = self._onMessage
     f.setClientAndRobo(self._client, _roboName)
+    dirCtrl.setClientAndRobo(self._client, _roboName)
 
   def startAsync(self):
     self._client.connect(self._host, self._port, self._keepalive)
@@ -79,6 +80,7 @@ class MqttClient:
   def _setupNotifications(self):
     #client.publish(_roboName+"/subscribe/gyro/angle")
     self._client.publish(_roboName+"/subscribe/color/name")
+    self._client.publish(_roboName+"/request/notper", str(100))
 
   def _onConnect(self, client, userdata, flags, rc):
     logger.debug("Connected with result code " + str(rc))

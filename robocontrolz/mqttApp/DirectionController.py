@@ -47,6 +47,10 @@ class DirectionController:
         self._turnState = TurnState.IDLE
         self._name = 'direction controller'
 
+    def setClientAndRobo(self, client, roboName):
+        self._mqtt = client
+        self._roboName = roboName
+
     def discover(self, client, userdata, msg):
         print('discover')
         if self._directionState == DirectionState.IDLE:
@@ -73,13 +77,11 @@ class DirectionController:
         if self._turnState == TurnState.TURN_ANGLE & self.correctedAngle() == self._destinationAngle:
             self.processEvent(DirectionEvents.POS_REACHED)
 
-
-    def updateColor(self, client, userdata, msg):
+    def updateColor(self, msg):
         print('new color')
-        if userdata != self._lastColor:
-            self._lastColor = userdata
+        if msg != self._lastColor:
+            self._lastColor = msg
             self.processEvent(DirectionEvents.NEW_COLOR, None)
-
 
     def processEvent(self, event, data):
         oldState = self._directionState
