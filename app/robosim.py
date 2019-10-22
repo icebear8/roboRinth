@@ -6,6 +6,7 @@ from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_0
 from hbmqtt.session import ApplicationMessage
 
+from color import Color
 from mqttclient import TOPIC_REQUEST_DRIVE_DIRECTIONS, TOPIC_REQUEST_DISCOVER_DIRECTIONS, MQTT_BROKER_URI, \
     TOPIC_NOTIFY_AVAILABLE_DIRECTIONS, TOPIC_NOTIFY_CROSSING_REACHED
 from position import Position
@@ -43,32 +44,20 @@ class RoboSimulator:
     async def discover_directions(self, message: ApplicationMessage):
         print('Discover Directions...')
 
-        directions = set()
+        result = []
         for direction in Direction:
             next_pos = self.position.new_pos_in_direction(direction)
-            for pos1, pos2 in self.edges:
+            for pos1, pos2, color in self.edges:
                 if pos1 == self.position and pos2 == next_pos or pos2 == self.position and pos1 == next_pos:
-                    directions.add(direction)
+                    result.append((direction, color))
 
-        mapping = {
-            Direction.NORTH: 'N',
-            Direction.SOUTH: 'S',
-            Direction.WEST: 'W',
-            Direction.EAST: 'E',
-        }
-        payload = json.dumps([[mapping[direction], 'B'] for direction in directions]).encode('utf-8')
+        payload = json.dumps([[direction.to_char(), color.to_char()] for direction, color in result]).encode('utf-8')
         await self.client.publish(TOPIC_NOTIFY_AVAILABLE_DIRECTIONS, payload)
 
     async def drive_direction(self, message: ApplicationMessage):
         payload = json.loads(message.data)
         print('Drive Direction: ' + payload[0])
-        mapping = {
-            'N': Direction.NORTH,
-            'S': Direction.SOUTH,
-            'W': Direction.WEST,
-            'E': Direction.EAST,
-        }
-        direction = mapping[payload[0]]
+        direction = Direction.from_char(payload[0])
 
         self.position = self.position.new_pos_in_direction(direction)
         print('  new position: {}:{}'.format(self.position.x, self.position.y))
@@ -83,12 +72,27 @@ class RoboSimulator:
                         self.edges.append((
                             Position(int((col - 1) / 2), int(row / 2)),
                             Position(int((col - 1) / 2) + 1, int(row / 2)),
+                            Color.BLACK,
                         ))
                     if char == '|':
                         self.edges.append((
                             Position(int(col / 2), int((row - 1) / 2)),
                             Position(int(col / 2), int((row - 1) / 2) + 1),
+                            Color.BLACK,
                         ))
+                    if char == 'r':
+                        if row % 2 == 0:
+                            self.edges.append((
+                                Position(int((col - 1) / 2), int(row / 2)),
+                                Position(int((col - 1) / 2) + 1, int(row / 2)),
+                                Color.BLACK,
+                            ))
+                        else:
+                            self.edges.append((
+                                Position(int(col / 2), int((row - 1) / 2)),
+                                Position(int(col / 2), int((row - 1) / 2) + 1),
+                                Color.RED,
+                            ))
 
                     if char == 's':
                         self.position = Position(int(col / 2), int(row / 2))

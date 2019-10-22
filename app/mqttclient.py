@@ -49,13 +49,7 @@ class MqttClient:
         asyncio.get_event_loop().create_task(self.__client.publish(TOPIC_REQUEST_DISCOVER_DIRECTIONS, b''))
 
     def drive_directions(self, directions: List[Direction]):
-        mapping = {
-            Direction.NORTH: 'N',
-            Direction.SOUTH: 'S',
-            Direction.WEST: 'W',
-            Direction.EAST: 'E',
-        }
-        payload = json.dumps([mapping[direction] for direction in directions]).encode('utf-8')
+        payload = json.dumps([direction.to_char() for direction in directions]).encode('utf-8')
         asyncio.get_event_loop().create_task(self.__client.publish(TOPIC_REQUEST_DRIVE_DIRECTIONS, payload))
 
     async def __crossing_reached(self, message: ApplicationMessage):
@@ -63,18 +57,8 @@ class MqttClient:
             handler()
 
     async def __available_directions(self, message: ApplicationMessage):
-        mapping_direction = {
-            'N': Direction.NORTH,
-            'S': Direction.SOUTH,
-            'W': Direction.WEST,
-            'E': Direction.EAST,
-        }
-        mapping_color = {
-            'B': Color.BLACK,
-            'R': Color.RED,
-            'Y': Color.YELLOW,
-        }
-        directions = set([(mapping_direction[entry[0]], mapping_color[entry[1]]) for entry in json.loads(message.data)])
+        payload = json.loads(message.data)
+        directions = [(Direction.from_char(entry[0]), Color.from_char(entry[1])) for entry in payload]
 
         for handler in self.__available_directions_handlers:
             handler(directions)

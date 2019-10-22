@@ -38,7 +38,7 @@ class Control:
             print("I have seen the whole world. Roger an out!")
             asyncio.get_event_loop().stop()
         else:
-            self.__mqtt_client.drive_directions([self.__path.convert_action_to_direction(action)])
+            self.__mqtt_client.drive_directions([action.to_direction()])
 
     def handle_discovery_finished(self, directions: List[Tuple[Direction, Color]]):
         print("onHandleDiscoveryFinished:" + str(directions))

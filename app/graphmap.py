@@ -39,6 +39,8 @@ class GraphMap:
 
         for direction in available_directions:
             self.edges.add(self.__create_edge(position, direction))
+            if direction[0] == Color.RED:
+                print('We found the treasure!!')
 
     def get_edge_color(self, position, direction):
         for e in self.edges:

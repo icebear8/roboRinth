@@ -8,7 +8,7 @@ from websocket_server import WebSocketServer
 
 
 def main():
-    robosim = RoboSimulator(sleep_time=0.5)
+    robosim = RoboSimulator(sleep_time=0.25)
     mqtt_client = MqttClient()
     websocket_server = WebSocketServer()
     graph_map = GraphMap()

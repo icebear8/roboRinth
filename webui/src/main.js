@@ -69,7 +69,8 @@ function getEdges(updateData) {
         const edge = {
             from: getNodeId(edgeData.node1),
             to: getNodeId(edgeData.node2),
-            color: 'black',
+            color: edgeData.color,
+            width: 2,
         };
         edges.push(edge);
     }

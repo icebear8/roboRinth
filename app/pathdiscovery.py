@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import Set
 from graphmap import Node
 from position import Position
@@ -12,6 +12,25 @@ class Action(IntEnum):
     GO_WEST = 3,
     DO_DISCOVERY = 4,
     DO_ABORT = 5,
+
+    def to_direction(self):
+        mapping = {
+            Action.GO_NORTH: Direction.NORTH,
+            Action.GO_EAST: Direction.EAST,
+            Action.GO_SOUTH: Direction.SOUTH,
+            Action.GO_WEST: Direction.WEST,
+        }
+        return mapping[self]
+
+    @staticmethod
+    def from_direction(direction):
+        mapping = {
+            Direction.NORTH: Action.GO_NORTH,
+            Direction.EAST: Action.GO_EAST,
+            Direction.SOUTH: Action.GO_SOUTH,
+            Direction.WEST: Action.GO_WEST,
+        }
+        return mapping[direction]
 
 
 class PathDiscovery:
@@ -40,11 +59,12 @@ class PathDiscovery:
         print("PATH: forward")
         new_directions = self.__map.get_unvisited_directions(self.__currentNode.position)
         print(new_directions)
-        action = self.__convert_direction_to_action(self.__get_most_left_direction(new_directions))
-        if action is None:
-            action = self.__return_step()
+        if new_directions:
+            dir1 = self.__get_most_left_direction(new_directions)
+            action = Action.from_direction(dir1)
+            self.__set_new_position(action.to_direction())
         else:
-            self.__set_new_position(self.convert_action_to_direction(action))
+            action = self.__return_step()
         print("PATH: action " + str(action))
         return action
 
@@ -57,7 +77,7 @@ class PathDiscovery:
         returnDirection = self.__calculate_direction(self.__currentNode, return_point)
         self.__currentNode = return_point
         self.__currentDirection = returnDirection
-        action = self.__convert_direction_to_action(returnDirection)
+        action = Action.from_direction(returnDirection)
         return action
 
     def __set_new_position(self, direction: Direction):
@@ -75,24 +95,6 @@ class PathDiscovery:
             return Direction.NORTH
         else:
             return Direction.SOUTH
-
-    def __convert_direction_to_action(self, dir: Direction) -> Action:
-        lookup = {Direction.NORTH: Action.GO_NORTH,
-                  Direction.EAST: Action.GO_EAST,
-                  Direction.SOUTH: Action.GO_SOUTH,
-                  Direction.WEST: Action.GO_WEST,
-                  None: None,
-                  }
-        return lookup[dir]
-
-    def convert_action_to_direction(self, action: Action) -> Direction:
-        lookup = {
-            Action.GO_NORTH: Direction.NORTH,
-            Action.GO_EAST: Direction.EAST,
-            Action.GO_SOUTH: Direction.SOUTH,
-            Action.GO_WEST: Direction.WEST,
-        }
-        return lookup[action]
 
     def __get_most_left_direction(self, directions: Set[Direction]) -> Direction:
         if Direction((int(self.__currentDirection) + int(Direction.WEST)) % 4) in directions:
