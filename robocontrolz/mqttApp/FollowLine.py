@@ -21,8 +21,12 @@ class FollowLineMotorSpeed(enum.Enum):
     rotatingSpeed = 4
 
 class followLine:
-    searchAngle = 20
-    waitTime = 2
+    SEARCH_ANGLE = 20
+    SEARCH_WAIT_TIME = 1
+    SEARCH_SPEED = 5
+    LINE_SPEED = 15
+    CROSSING_SPEED = 30
+    CROSSING_ANGLE = 230
 
     def __init__(self):
         logger.warning("FollowLine Constructor ")
@@ -32,31 +36,33 @@ class followLine:
         self._client = client
         self._roboName = roboName
 
+    def isLineColor(self,color):
+        if color.startswith("B") or color.startswith("Y") or color.startswith("R"):
+            return True
+        else :
+            return False
+
     def updateColor(self, msg):
         if (self.currentState == FollowLineState.driving):
-            if (msg.startswith("B")):
+            if (self.isLineColor(msg)):
                 logger.debug("got Black while driving")
                 #self._client.publish(self._roboName+"/request/txt", "Black, in Driving")
             if (msg.startswith("W")):
                 logger.debug("got White while driving: Lost line")
                 self.currentState = FollowLineState.lostLineSearchRight
                 self.setMotorSpeed(FollowLineMotorSpeed.rotatingSpeed)
-                threading.Timer(self.waitTime, self.handleTurnFinished).start()
+                threading.Timer(self.SEARCH_WAIT_TIME, self.handleTurnFinished).start()
                 logger.debug("startSearchRight")
                 #self._client.publish(self._roboName+"/request/txt", "White, in Driving")
 
         if ((self.currentState == FollowLineState.lostLineSearchLeft) or (self.currentState == FollowLineState.lostLineSearchRight)):
-            if (msg.startswith("B")):
+            if (self.isLineColor(msg)):
                 logger.debug("got Black while lineSearch")
                 #self._client.publish(self._roboName+"/request/txt", "Black, in LostLine")
 
                 self.setMotorSpeed(FollowLineMotorSpeed.stop)
                 self.setMotorSpeed(FollowLineMotorSpeed.lineSpeed)
                 self.currentState = FollowLineState.driving
-        if (self.currentState == FollowLineState.reachCrossing):
-            if (msg.startswith("W")):
-                logger.debug("got Whilte while in crossing")
-                #self._client.publish(self._roboName+"/request/txt", "White, in Crossing")
 
     def handleStartDriving(self, msg=None):
         self.setMotorSpeed(FollowLineMotorSpeed.lineSpeed)
@@ -64,20 +70,20 @@ class followLine:
 
     def handleTurnFinished(self):
         if (self.currentState == FollowLineState.lostLineSearchRight):
-            steering, angle = self.convertAngle(-2 * self.searchAngle)
-            controlString = "{\"speed\":\"3\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
+            steering, angle = self.convertAngle(-2 * self.SEARCH_ANGLE)
+            controlString = "{\"speed\":\""+str(self.SEARCH_SPEED)+"\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
             self._client.publish(self._roboName+"/request/steering/turn", controlString)
             self.currentState = FollowLineState.lostLineSearchLeft
-            threading.Timer(self.waitTime*2, self.handleTurnFinished).start()
+            threading.Timer(self.SEARCH_WAIT_TIME * 2, self.handleTurnFinished).start()
             logger.debug("startSearchLeft")
             logger.debug(controlString)
 
         elif (self.currentState == FollowLineState.lostLineSearchLeft):
-            steering, angle = self.convertAngle(self.searchAngle)
-            controlString = "{\"speed\":\"3\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
+            steering, angle = self.convertAngle(self.SEARCH_ANGLE)
+            controlString = "{\"speed\":\""+str(self.SEARCH_SPEED)+"\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
             self._client.publish(self._roboName+"/request/steering/turn", controlString)
             self.currentState = FollowLineState.lostLineSearchCenter
-            threading.Timer(self.waitTime, self.handleTurnFinished).start()
+            threading.Timer(self.SEARCH_WAIT_TIME, self.handleTurnFinished).start()
             logger.debug("startSearchCenter")
             logger.debug(controlString)
         elif (self.currentState == FollowLineState.lostLineSearchCenter):
@@ -90,12 +96,12 @@ class followLine:
         if (speed == FollowLineMotorSpeed.stop):
             self._client.publish(self._roboName+"/request/steering/activate", "{\"speed\":\"0\",\"steering\":\"0\"}")
         elif (speed == FollowLineMotorSpeed.crossingSpeed):
-            self._client.publish(self._roboName+"/request/steering/turn", "{\"speed\":\"30\",\"steering\":\"0\",\"angle\":\"250\"}")
+            self._client.publish(self._roboName+"/request/steering/turn", "{\"speed\":\""+str(self.CROSSING_SPEED)+"\",\"steering\":\"0\",\"angle\":\""+str(self.CROSSING_ANGLE)+"\"}")
         elif (speed == FollowLineMotorSpeed.lineSpeed):
-            self._client.publish(self._roboName+"/request/steering/activate", "{\"speed\":\"10\",\"steering\":\"0\"}")
+            self._client.publish(self._roboName+"/request/steering/activate", "{\"speed\":\""+str(self.LINE_SPEED)+"\",\"steering\":\"0\"}")
         elif (speed == FollowLineMotorSpeed.rotatingSpeed):
-            steering, angle = self.convertAngle(self.searchAngle)
-            controlString = "{\"speed\":\"3\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
+            steering, angle = self.convertAngle(self.SEARCH_ANGLE)
+            controlString = "{\"speed\":\""+str(self.SEARCH_SPEED)+"\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
             self._client.publish(self._roboName+"/request/steering/turn", controlString)
             logger.debug(controlString)
         return
