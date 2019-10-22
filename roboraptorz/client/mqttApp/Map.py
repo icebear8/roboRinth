@@ -106,7 +106,6 @@ class Map:
         if not point in self.mapPoints:
             self.mapPoints[point] = self.MapNode(point)
         mapNode = self.mapPoints[point].isExplored = True
-        mapNode.isExplored = True
         self._roboLocation = point
 
     def getRobotLocation(self):

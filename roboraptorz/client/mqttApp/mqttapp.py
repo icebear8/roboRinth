@@ -93,7 +93,8 @@ def main(argv):
   roboDriver=RoboDriver(roboName)
   mapMatcher=MapMatcher()
   mapMatcher.registerRobotDriver(roboName, roboDriver)
-  roboName=Control(roboName, mapMatcher, roboDriver)
+  robots={}
+  robots[roboName]=roboControl=Control(roboName, mapMatcher, roboDriver)
 
   callback = lambda client, userdata, msg : _mqttCallbackSim(roboDriver, client, userdata, msg)
   simHandlers = {
@@ -101,6 +102,7 @@ def main(argv):
   }
   client.addMessageHandler(simHandlers)
 
+  robots["roboraptorz"].start()
   # End test code
 
   input("\n\nPress Enter to abort...\n\n")

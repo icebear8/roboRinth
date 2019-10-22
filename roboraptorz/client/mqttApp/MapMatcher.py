@@ -11,7 +11,7 @@ class MapMatcher:
         self.onMapUpdate = None
 
     def getMap(self, mapName):
-        return self.roboMaps[mapName]
+        return self._roboMaps[mapName]
 
     def registerRobotDriver(self, mapName, robotDriver):
         self._roboMaps[mapName] = Map(mapName)

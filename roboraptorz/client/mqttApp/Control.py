@@ -19,7 +19,7 @@ class Control:
     self._mapMatcher.onMapUpdate=self._onMapUpdate
 
   def start(self):
-    self._map.setRobotLocation(Point(0,0))
+    self._map().setRobotLocation(Point(0,0))
     self._roboDriver.discoverMode(True)
 
   def _map(self):
