@@ -15,12 +15,13 @@ class MqttClientSimulator:
         self.__load_file(os.path.dirname(__file__) + '/test_maze.txt')
 
     def discover_directions(self):
-        directions = []
+        directions = set()
         for direction in Direction:
             next_pos = self.position.new_pos_in_direction(direction)
             for pos1, pos2 in self.edges:
                 if pos1 == self.position and pos2 == next_pos or pos2 == self.position and pos1 == next_pos:
-                    directions.append(direction)
+                    directions.add(direction)
+        directions = list(directions)
 
         async def answer():
             await asyncio.sleep(self.sleep_time)
@@ -64,6 +65,3 @@ class MqttClientSimulator:
 
                     if char == 's':
                         self.position = Position(int(col / 2), int(row / 2))
-        for edge in self.edges:
-            print(edge)
-        print(self.position)
