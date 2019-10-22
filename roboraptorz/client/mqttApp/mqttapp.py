@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import getopt
+import argparse
 import logging
 import sys
 import time
@@ -23,47 +23,20 @@ def _initializeLogging(loglevel):
   logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=numeric_level)
   logging.Formatter.converter = time.gmtime
 
-def _printUsage():
-  print('mqttapp.py [--host=, --port=, --log=]')
-  print('--host=: Host name or IP to connect')
-  print('--port=: Port to connect')
-  print('--clientId=: MQTT client connection id')
-  print('--log=: Loglevel [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
-
 def main(argv):
+  parser = argparse.ArgumentParser(description='RoboRinth Robot Explorer')
+  parser.add_argument('--host', type=str, help='host of the mqtt broker to connect', default = "192.168.0.200")
+  parser.add_argument('--port', type=int, default=1883, help='port of the mqtt broker to connect')
+  parser.add_argument('--clientId', type=str, default="", help='MQTT client connection id')
+  parser.add_argument('--log', type=str, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="DEBUG", help='Loglevel ')
 
-  host = "localhost"
-  port = 1883
-  loglevel = "DEBUG"
-  clientId = None
+  args = parser.parse_args()
 
-  # Readout arguments
-  try:
-    opts, args = getopt.getopt(argv, "h", ["help", "host=", "port=", "clientId=", "log="])
-  except getopt.GetoptError as err:
-    print(err)  # will print something like "option -a not recognized"
-    _printUsage()
-    sys.exit(2)
-
-  for opt, arg in opts:
-    if opt in ('-h', '--help'):
-      _printUsage()
-      sys.exit()
-    elif opt in ('--host'):
-      host = arg
-    elif opt in ('--port'):
-      try:
-        port = int(arg)
-      except ValueError:
-        pass
-    elif opt in ('--log='):
-      loglevel = arg
-
-  _initializeLogging(loglevel)
+  _initializeLogging(args.log)
   logger.debug("Main started")
 
   # Setup mqtt client
-  client = MqttClient(host, port, clientId)
+  client = MqttClient(args.host, args.port, args.clientId)
   client.startAsync()
   time.sleep(2)
 
