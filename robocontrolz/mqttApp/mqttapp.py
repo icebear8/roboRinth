@@ -7,6 +7,7 @@ import time
 
 from MqttClient import MqttClient
 from MqttClient import dirCtrl
+from MqttClient import _roboName
 
 import json
 
@@ -70,18 +71,22 @@ def main(argv):
   while cmd != "quit":
 
     cmd = input("\n\nEnter quit to abort\n\n")
+    print(cmd)
     tokens = cmd.split(" ")
     if len(tokens) >= 1:
       if tokens[0] == "disco":
-        client._client.publish("robo-01/request/discoverDirections")
+        client._client.publish(_roboName + "/request/discoverDirections")
       elif tokens[0] == "turn" and len(tokens) >= 2:
-        client._client.publish("robo-01/request/driveDirectionsRaw", json.dumps(list(tokens[1])))
+        print(tokens[1])
+        client._client.publish(_roboName + "/request/driveDirectionsRaw","[\""+str(tokens[1])+"\"]")
       elif tokens[0] == "reached":
         dirCtrl.posReached()
       elif tokens[0] == 'color' and len(tokens) >= 2:
-        client._client.publish("robo-01/notification/color/name", tokens[1])
+        client._client.publish(_roboName + "/notification/color/name", tokens[1])
       elif tokens[0] == 'angle' and len(tokens) >= 2:
-        client._client.publish("robo-01/notification/gyro/angle", tokens[1])
+        client._client.publish(_roboName + "/notification/gyro/angle", tokens[1])
+      elif tokens[0] == "init":
+        dirCtrl.init()
 
   # Terminate
   client.stop()
