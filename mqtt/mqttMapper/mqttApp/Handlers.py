@@ -3,23 +3,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-orientation = 0
+orientation = dict()
 
 orientations = ['N', 'E', 'S', 'W']
 directions = ['F', 'R', 'B', 'L']
 
 
-def symbolicOrientationFrom(value):
-    return orientations[(value + orientation) % 4]
+def symbolicOrientationFrom(robo, value):
+    return orientations[(value + orientation[robo]) % 4]
 
 
-def symbolicDirectionFrom(value):
-    return directions[(value - orientation) % 4]
+def symbolicDirectionFrom(robo, value):
+    return directions[(value - orientation[robo]) % 4]
 
 
-def updateOrientationWithDirection(direction):
+def updateOrientationWithDirection(robo, direction):
     global orientation
-    orientation = (orientation + directions.index(direction)) % 4
+    orientation[robo] = (orientation[robo] + directions.index(direction)) % 4
     return direction
 
 
@@ -34,10 +34,11 @@ def valueFromDirection(symbol):
 def availableDirectionsRaw(client, userdata, msg):
     logger.debug("availableDirectionsRaw: " + msg.topic + " " + str(msg.payload))
     try:
+        robo = msg.topic.split("/")[0]
         decoded = json.loads(msg.payload)
         client.publish(msg.topic[:-3],
                        json.dumps(
-                           [(symbolicOrientationFrom(valueFromDirection(d)), c) for (d, c)
+                           [(symbolicOrientationFrom(robo, valueFromDirection(d)), c) for (d, c)
                             in decoded]))
     except:
         client.publish(msg.topic[:-22] + "error", json.dumps("Invalid payload " + str(msg.payload) + " for topic " + msg.topic))
@@ -46,13 +47,15 @@ def availableDirectionsRaw(client, userdata, msg):
 def driveDirections(client, userdata, msg):
     logger.debug("driveDirection: " + msg.topic + " " + str(msg.payload))
     try:
+        robo = msg.topic.split("/")[0]
         payload = json.loads(msg.payload)
         client.publish(msg.topic + "Raw",
-                       json.dumps([updateOrientationWithDirection(symbolicDirectionFrom(valueFromOrientation(d))) for d in payload]))
+                       json.dumps([updateOrientationWithDirection(robo, symbolicDirectionFrom(robo, valueFromOrientation(d))) for d in payload]))
     except:
         client.publish(msg.topic[:-15] + "error", json.dumps("Invalid payload " + str(msg.payload) + " for topic " + msg.topic))
 
 def init(client, userdata, msg):
     global orientation
     logger.debug("init: " + msg.topic + " " + str(msg.payload))
-    orientation = 0
+    robo = msg.topic.split("/")[0]
+    orientation[robo] = 0
