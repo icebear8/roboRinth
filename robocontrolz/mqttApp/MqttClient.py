@@ -11,8 +11,8 @@ from DirectionController import DirectionController
 
 logger = logging.getLogger(__name__)
 
-dirCtrl = DirectionController()
 f = followLine()
+dirCtrl = DirectionController(f)
 
 _defaultHost="localhost"
 _defaultPort=1883

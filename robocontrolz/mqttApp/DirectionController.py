@@ -2,32 +2,7 @@ from enum import Enum
 
 import json
 
-class DirectionState(Enum):
-    IDLE = 1
-    # DISCOVERY
-    START_DISCOVERY = 2
-    DISCOVERY = 3
-    DISCOVERY_FINISHED = 4
-    # TURN TO POSITION
-    TURN_TO_POS = 5
-    TURN_FINISHED = 6
-
-
-class DirectionEvents(Enum):
-    START_DISCOVERY = 1
-    POS_REACHED = 2
-    START_TURN = 3
-    NEW_COLOR = 4
-
-
-class TurnState(Enum):
-    IDLE = 1
-    TURN_ANGLE = 2
-
-class TurnEvents(Enum):
-    NEW_ANGLE = 1
-    ANGLE_REACHED = 2
-
+SPEED = 5
 
 colors = {
     'Black' : 'B',
@@ -50,8 +25,33 @@ angleToDirection = {
     360 : 'F',
 }
 
+class DirectionState(Enum):
+    IDLE = 1
+    # DISCOVERY
+    START_DISCOVERY = 2
+    DISCOVERY = 3
+    DISCOVERY_FINISHED = 4
+    # TURN TO POSITION
+    TURN_TO_POS = 5
+    TURN_FINISHED = 6
+
+class DirectionEvents(Enum):
+    START_DISCOVERY = 1
+    POS_REACHED = 2
+    START_TURN = 3
+    NEW_COLOR = 4
+
+class TurnState(Enum):
+    IDLE = 1
+    TURN_ANGLE = 2
+
+class TurnEvents(Enum):
+    NEW_ANGLE = 1
+    ANGLE_REACHED = 2
+
 class DirectionController:
-    def __init__(self):
+    def __init__(self, followLine):
+        self._followLine = followLine
         self._rawAngle = 0
         self._angleOffset = 0
         self._destinationAngle = 0
@@ -94,10 +94,8 @@ class DirectionController:
             self.zeroAngle()
             if type(jdata[0]) == int:
                 self.processEvent(DirectionEvents.START_TURN, jdata[0])
-            elif directionToAngle.get(jdata[0], 0) != 0:
-                self.processEvent(DirectionEvents.START_TURN, directionToAngle.get(jdata[0], 0))
             else:
-                print("couldn't turn")
+                self.processEvent(DirectionEvents.START_TURN, directionToAngle.get(jdata[0], 0))
         else:
             print('error: robot busy, turn not allowed')
 
@@ -199,6 +197,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('TURN_FINISHED, entry action')
+                self._followLine.handleStartDriving()
                 self.processEvent(None)
             else:
                 # recurring action
@@ -209,7 +208,7 @@ class DirectionController:
             if event == TurnEvents.NEW_ANGLE:
                 self._destinationAngle = data
                 parameters = dict()
-                parameters['speed'] = 10
+                parameters['speed'] = SPEED
                 if data < 0:
                     print('turn robot to the left')
                     parameters['steering'] = -100

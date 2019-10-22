@@ -7,6 +7,7 @@ import time
 
 from MqttClient import MqttClient
 from MqttClient import dirCtrl
+from MqttClient import f
 from MqttClient import _roboName
 
 import json
@@ -87,6 +88,8 @@ def main(argv):
         client._client.publish(_roboName + "/notification/gyro/angle", tokens[1])
       elif tokens[0] == "init":
         dirCtrl.init()
+      elif tokens[0] == "follow":
+        f.handleStartDriving()
 
   # Terminate
   client.stop()

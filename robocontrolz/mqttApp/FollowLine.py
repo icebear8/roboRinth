@@ -58,7 +58,7 @@ class followLine:
                 logger.debug("got Whilte while in crossing")
                 #self._client.publish(self._roboName+"/request/txt", "White, in Crossing")
 
-    def handleStartDriving(self, msg):
+    def handleStartDriving(self, msg=None):
         self.setMotorSpeed(FollowLineMotorSpeed.lineSpeed)
         self.currentState = FollowLineState.driving
 
