@@ -7,7 +7,7 @@ from websocket_server import WebSocketServer
 
 
 def test_simulator():
-    client = MqttClientSimulator(sleep_time=1)
+    client = MqttClientSimulator(sleep_time=0.25)
 
     theMap = GraphMap()
     path = PathDiscovery(theMap)
@@ -18,7 +18,7 @@ def test_simulator():
     client.register_available_directions(control.onHandleDiscoveryFinished)
     #client.register_crossing_reached(lambda: client.discover_directions())
     #client.register_available_directions(lambda directions: client.drive_direction(directions[0]))
-    asyncio.get_event_loop().call_soon(lambda: client.discover_directions())
+    asyncio.get_event_loop().call_later(3, lambda: client.discover_directions())
     asyncio.get_event_loop().run_forever()
 
 
