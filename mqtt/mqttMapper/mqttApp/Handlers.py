@@ -32,19 +32,25 @@ def valueFromDirection(symbol):
 
 
 def availableDirectionsRaw(client, userdata, msg):
-    logger.debug("availableDirections: " + msg.topic + " " + str(msg.payload))
-    client.publish(msg.topic[:-3],
-                   json.dumps(
-                       [(symbolicOrientationFrom(valueFromDirection(d)), c) for (d, c)
-                        in json.loads(msg.payload)]))
+    logger.debug("availableDirectionsRaw: " + msg.topic + " " + str(msg.payload))
+    try:
+        decoded = json.loads(msg.payload)
+        client.publish(msg.topic[:-3],
+                       json.dumps(
+                           [(symbolicOrientationFrom(valueFromDirection(d)), c) for (d, c)
+                            in decoded]))
+    except:
+        client.publish(msg.topic[:-22] + "error", json.dumps("Invalid payload " + str(msg.payload) + " for topic " + msg.topic))
 
 
 def driveDirections(client, userdata, msg):
     logger.debug("driveDirection: " + msg.topic + " " + str(msg.payload))
-    payload = json.loads(msg.payload)
-    client.publish(msg.topic + "Raw",
-                   json.dumps([updateOrientationWithDirection(symbolicDirectionFrom(valueFromOrientation(d))) for d in payload]))
-
+    try:
+        payload = json.loads(msg.payload)
+        client.publish(msg.topic + "Raw",
+                       json.dumps([updateOrientationWithDirection(symbolicDirectionFrom(valueFromOrientation(d))) for d in payload]))
+    except:
+        client.publish(msg.topic[:-15] + "error", json.dumps("Invalid payload " + str(msg.payload) + " for topic " + msg.topic))
 
 def init(client, userdata, msg):
     global orientation

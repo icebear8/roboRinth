@@ -78,4 +78,5 @@ class MqttClient:
     logger.debug("Unsubscribed " + str(mid))
 
   def _onMessage(self, client, userdata, msg):
-    logger.debug("Unhandled message: " + msg.topic + " " + str(msg.payload))
+    #logger.debug("Unhandled message: " + msg.topic + " " + str(msg.payload))
+    pass
