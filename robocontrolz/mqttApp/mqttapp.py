@@ -8,6 +8,8 @@ import time
 from MqttClient import MqttClient
 from MqttClient import dirCtrl
 
+import json
+
 logger = logging.getLogger(__name__)
 
 client = None
@@ -73,7 +75,7 @@ def main(argv):
       if tokens[0] == "disco":
         client._client.publish("robo-01/request/discoverDirections")
       elif tokens[0] == "turn" and len(tokens) >= 2:
-        client._client.publish("robo-01/request/driveDirectionsRaw", list(tokens[1]))
+        client._client.publish("robo-01/request/driveDirectionsRaw", json.dumps(list(tokens[1])))
       elif tokens[0] == "reached":
         dirCtrl.posReached()
       elif tokens[0] == 'color' and len(tokens) >= 2:

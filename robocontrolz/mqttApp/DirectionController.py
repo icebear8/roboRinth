@@ -22,8 +22,6 @@ class DirectionEvents(Enum):
 class TurnState(Enum):
     IDLE = 1
     TURN_ANGLE = 2
-    FINISHED = 3
-
 
 class TurnEvents(Enum):
     NEW_ANGLE = 1
@@ -65,11 +63,11 @@ class DirectionController:
         angle = desiredangle / 2
         return steering, angle
 
-    def turn(self, client, userdata, msg):
+    def turn(self, msg):
         print('turn')
         if self._directionState == DirectionState.IDLE:
             self.zeroAngle()
-            self.processEvent(DirectionEvents.START_TURN, direction.get(userdata, None))
+            self.processEvent(DirectionEvents.START_TURN, direction.get(msg, None))
         else:
             print('error: robot busy, turn not allowed')
 
@@ -77,7 +75,7 @@ class DirectionController:
         self.processEvent(DirectionEvents.POS_REACHED, 0)
 
     def updateAngle(self, client, userdata, msg):
-        self._rawAngle = userdata
+        self._rawAngle = int(msg.payload.decode("utf-8"))
         if self._turnState == TurnState.TURN_ANGLE and self.isAngleReached():
             self.processTurnEvent(TurnEvents.ANGLE_REACHED)
 
@@ -86,7 +84,7 @@ class DirectionController:
             self._lastColor = msg
             self.processEvent(DirectionEvents.NEW_COLOR, None)
 
-    def processEvent(self, event, data):
+    def processEvent(self, event, data=None):
         oldDirectionState = self._directionState
 
         # transitions
@@ -140,7 +138,7 @@ class DirectionController:
             else:
                 # recurring action
                 print('DISCOVERY, recurring action')
-                print('add color to list: ' + data)
+                # print('add color to list: ' + data)
 
         elif self._directionState == DirectionState.DISCOVERY_FINISHED:
             if self._directionState != oldDirectionState:
@@ -168,8 +166,7 @@ class DirectionController:
                 # recurring action
                 print('TURN_FINISHED, recurring action')
 
-
-    def processTurnEvent(self, event, data):
+    def processTurnEvent(self, event, data=None):
         if self._turnState == TurnState.IDLE:
             if event == TurnEvents.NEW_ANGLE:
                 self._destinationAngle = data
@@ -181,10 +178,8 @@ class DirectionController:
         elif self._turnState == TurnState.TURN_ANGLE:
             if event == TurnEvents.ANGLE_REACHED:
                 print('stop turn robot')
+                self._turnState = TurnState.IDLE
                 self.processEvent(DirectionEvents.POS_REACHED)
-                self._turnState = TurnState.FINISHED
-        elif self._turnState == TurnState.FINISHED:
-            self._turnState = TurnState.IDLE
 
     def zeroAngle(self):
         self._angleOffset = self._rawAngle
