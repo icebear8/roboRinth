@@ -87,6 +87,7 @@ def main(argv):
   client.startAsync()
   time.sleep(2)
 
+  # Test code for MapMatcher
   roboDriver = RoboDriver("roboraptorz")
   mapMatcher = MapMatcher()
   mapMatcher.registerRobotDriver("roboraptorz", roboDriver)
@@ -95,7 +96,9 @@ def main(argv):
   simHandlers = {
     "roboraptorz/notification/availableDirections": callback
   }
-  client.setupMessageHandler(simHandlers)
+  client.addMessageHandler(simHandlers)
+
+  # End test code
 
   input("\n\nPress Enter to abort...\n\n")
 
