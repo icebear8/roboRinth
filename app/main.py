@@ -1,16 +1,18 @@
 import asyncio
 from control import Control
-from Path import PathDiscovery
 from map import Map
 from mqttclient_simulator import MqttClientSimulator
 from Path import PathDiscovery
+from websocket_server import WebSocketServer
+
 
 def test_simulator():
     client = MqttClientSimulator(sleep_time=1)
 
     theMap = Map()
     path = PathDiscovery(theMap)
-    control = Control(theMap,client,path)
+    server = WebSocketServer()
+    control = Control(theMap, client, path, server)
 
     client.register_crossing_reached(control.onHandleCrossingReached)
     client.register_available_directions(control.onHandleDiscoveryFinished)

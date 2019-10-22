@@ -12,10 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class Control:
-  def __init__(self, theMap, mqttCom, pathFinder):
+  def __init__(self, theMap, mqttCom, pathFinder, server):
     self._map = theMap
     self._mqttCom = mqttCom
     self._path = pathFinder
+    self._server = server
 
   def onHandleCrossingReached(self):
     print("onHandleCrossingReached")
@@ -36,5 +37,6 @@ class Control:
   def onHandleDiscoveryFinished(self, direction: Direction):
     print("onHandleDiscoveryFinished:" + str(direction))
     self._map.node_discovered(self._path.get_current_position(), direction)
+    self._server.send_update(self._map)
     action = self._path.handle_discovery_finished()
     self.handle_action(action)
