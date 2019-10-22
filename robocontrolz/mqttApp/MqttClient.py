@@ -31,9 +31,10 @@ mqttSubscriptions = [
 mqttSubscriptionHandlers = {
   _roboName+"/notification/color/#":   handler.handleColor,
   _roboName+"/notification/gyro/#":    handler.handleGyro,
-  _roboName+"/request/discover":     dirCtrl.discover,
+  _roboName+"/request/discoverDirections":     dirCtrl.discover,
   _roboName+"/notification/color/name":    handler.handleColor,
   _roboName+"/request/driveDirectionsRaw":    handler.handleStartDriving,
+  _roboName+"/notification/gyro/angle": dirCtrl.updateAngle
   #_roboName+"/request/motor/position":    handler.handleMotorPosition,
 }
 

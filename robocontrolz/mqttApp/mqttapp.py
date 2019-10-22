@@ -79,7 +79,7 @@ def main(argv):
       elif tokens[0] == 'color' and len(tokens) >= 2:
         client._client.publish("robo-01/notification/color/name", tokens[1])
       elif tokens[0] == 'angle' and len(tokens) >= 2:
-        client._client.publish("robo-01/notifiction/gyro/angle", tokens[1])
+        client._client.publish("robo-01/notification/gyro/angle", tokens[1])
 
   # Terminate
   client.stop()
