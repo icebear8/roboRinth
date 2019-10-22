@@ -53,7 +53,8 @@ class RoboDriver:
 
     def driveDirection(self, direction=RoboDirection.NORTH):
       if self._mqttClient is not None:
-        self._mqttClient.publish(self._topicPrefix+"/request/driveDirections", self._toDirString(direction),a_retain=True)
+        payLoad = "[\"" + self._toDirString(direction) + "\"]"
+        self._mqttClient.publish(self._topicPrefix+"/request/driveDirections",a_payload=dirList, a_retain=True)
         loggerDrv.debug("driveDirection: " + str(direction))
 
     def discoverMode(self, enabled=False):
