@@ -20,3 +20,5 @@ def handleMotorPosition(client, userdata, msg):
   logger.debug("MotorPosition:" + msg.topic + " " + str(msg.payload.decode("utf-8")))
   # userdata.updateMotorPosition()
 
+def handleInit(client, userdata, msg):
+  userdata['directionController'].init()

@@ -66,6 +66,7 @@ class DirectionController:
         self._roboName = roboName
 
     def init(self):
+        print('init')
         parameters = dict()
         parameters['speed'] = 0
         parameters['steering'] = 0
@@ -158,6 +159,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('START_DISCOVERY, entry action')
+                self._mqtt.publish(self._roboName + '/notification/busy')
                 self.processTurnEvent(TurnEvents.NEW_ANGLE, -20)
             else:
                 # recurring action
@@ -188,6 +190,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('TURN_TO_POS, entry action')
+                self._mqtt.publish(self._roboName + '/notification/busy')
                 self.processTurnEvent(TurnEvents.NEW_ANGLE, data)
             else:
                 # recurring action
