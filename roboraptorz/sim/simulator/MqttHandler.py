@@ -69,7 +69,7 @@ class MqttHandler(object):
 
   def notify(self, topic, msg):
     self._client._notify(topic, msg)
-    logger.debug("Sent: %s to %s",msg, self._notifications[simpleTopic])
+    logger.debug("Sent: %s to %s",msg, topic)
 
 if __name__ == "__main__":
   mqttHandler = MqttHandler("file")
