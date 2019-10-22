@@ -89,8 +89,9 @@ def main(argv):
   time.sleep(2)
 
   # Test code for MapMatcher
-  roboName="roboraptorz"
+  roboName="roboraptorz-0"
   roboDriver=RoboDriver(roboName)
+  roboDriver.setMqttClient(client)
   mapMatcher=MapMatcher()
   mapMatcher.registerRobotDriver(roboName, roboDriver)
   robots={}
@@ -98,11 +99,11 @@ def main(argv):
 
   callback = lambda client, userdata, msg : _mqttCallbackSim(roboDriver, client, userdata, msg)
   simHandlers = {
-    "roboraptorz/notification/availableDirectionsMapTest": callback
+    roboName + "/notification/availableDirectionsMapTest": callback
   }
   client.addMessageHandler(simHandlers)
 
-  robots["roboraptorz"].start()
+  robots[roboName].start()
   # End test code
 
   input("\n\nPress Enter to abort...\n\n")
