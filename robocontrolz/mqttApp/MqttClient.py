@@ -4,6 +4,9 @@ import random
 import sys
 
 import paho.mqtt.client as mqtt
+from FollowLine import followLine
+
+f = followLine()
 
 import Handlers as handler
 from DirectionController import DirectionController
@@ -14,16 +17,23 @@ dirCtrl = DirectionController()
 
 _defaultHost="localhost"
 _defaultPort=1883
+_roboName = "robo-01"
 
 mqttSubscriptions = [
-  "robo-01/notification/#",
-  "robo-01/request/discover"
+  #_roboName+"/notification/#",
+  _roboName+"/request/discover",
+  _roboName+"/notification/color/name",
+  _roboName+"/request/driveDirectionsRaw"
+
 ]
 
 mqttSubscriptionHandlers = {
-  "robo-01/notification/color/#":   handler.handleColor,
-  "robo-01/notification/gyro/#":    handler.handleGyro,
-  "robo-01/request/discover":     dirCtrl.discover
+  _roboName+"/notification/color/#":   handler.handleColor,
+  _roboName+"/notification/gyro/#":    handler.handleGyro,
+  _roboName+"/request/discover":     dirCtrl.discover,
+  _roboName+"/notification/color/name":    handler.handleColor,
+  _roboName+"/request/driveDirectionsRaw":    handler.handleStartDriving,
+  #_roboName+"/request/motor/position":    handler.handleMotorPosition,
 }
 
 class MqttClient:
@@ -37,12 +47,13 @@ class MqttClient:
     self._port = port
     self._keepalive = 60
 
-    self._client = mqtt.Client(client_id=clientId, clean_session=True)
+    self._client = mqtt.Client(client_id=clientId, clean_session=True, userdata=f)
     self._client.on_connect = self._onConnect
     self._client.on_subscribe = self._onSubscribe
     self._client.on_unsubscribe = self._onUnsubscribe
     self._client.on_disconnect = self._onDisconnect
     self._client.on_message = self._onMessage
+    f.setClientAndRobo(self._client, _roboName)
 
   def startAsync(self):
     self._client.connect(self._host, self._port, self._keepalive)
@@ -61,8 +72,8 @@ class MqttClient:
       self._client.message_callback_add(handler, handlers[handler])
 
   def _setupNotifications(self):
-    client.publish("robo-01/subscribe/color/name")
-    client.publish("robo-01/subscribe/gyro/angle")
+    #client.publish(_roboName+"/subscribe/gyro/angle")
+    self._client.publish(_roboName+"/subscribe/color/name")
 
   def _onConnect(self, client, userdata, flags, rc):
     logger.debug("Connected with result code " + str(rc))
