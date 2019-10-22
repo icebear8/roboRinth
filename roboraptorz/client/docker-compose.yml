@@ -4,5 +4,7 @@ services:
     build: .
     image: icebear8/mqttclient:build
     container_name: mqttclient
+    volumes:
+      - ./mqttApp:/mnt/app
     env_file:
       - ./config/default.env
