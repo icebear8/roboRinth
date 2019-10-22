@@ -71,6 +71,8 @@ class DirectionController:
         parameters['speed'] = 0
         parameters['steering'] = 0
         self._mqtt.publish(self._roboName + '/request/steering/activate', json.dumps(parameters))
+        self._directionState = DirectionState.IDLE
+        self._turnState = TurnState.IDLE
 
     def discover(self, client, userdata, msg):
         print('discover')
