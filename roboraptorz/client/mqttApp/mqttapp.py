@@ -94,7 +94,7 @@ def main(argv):
 
   callback = lambda client, userdata, msg : _mqttCallbackSim(roboDriver, client, userdata, msg)
   simHandlers = {
-    "roboraptorz/notification/availableDirections": callback
+    "roboraptorz/notification/availableDirectionsMapTest": callback
   }
   client.addMessageHandler(simHandlers)
 
