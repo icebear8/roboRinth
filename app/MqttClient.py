@@ -118,8 +118,9 @@ class MqttClient:
       callback()  
 
   def _convert_payload_to_directions(self, payload):
-    mapping_list = {"E":Direction.EAST, "N" : Direction.NORTH, "S" : Direction.SOUTH, "W" : Direction.WEST}
-    return [mapping_list[entry[0]] for entry in payload]
+    mapping_direction = {"E":Direction.EAST, "N" : Direction.NORTH, "S" : Direction.SOUTH, "W" : Direction.WEST}
+    mapping_color = {"E":Direction.EAST, "N" : Direction.NORTH, "S" : Direction.SOUTH, "W" : Direction.WEST}
+    return [(mapping_direction[entry[0]], mapping_color[entry[1]]) for entry in payload]
 
   def _convert_direction_to_payload(self, directions):
     mapping_list = {Direction.EAST:"E", Direction.NORTH: "N", Direction.SOUTH : "S",Direction.WEST:"W"}
