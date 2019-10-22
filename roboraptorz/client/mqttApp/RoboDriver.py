@@ -93,14 +93,14 @@ class RoboDriver:
       loggerDrv.debug(self._status)
 
     def mqtt_crossingReached(self, client, user, msg):
-      self._status = RoboStatus.IDLE
       loggerDrv.debug("crossingReached received")
       if self._discoverMode == True:
         # TODO: Start discovering
         loggerDrv.debug("Detect Direction..")
         self._mqttClient.publish(self._topicPrefix + "/request/discoverDirections")
       else:
-        loggerDrv.debug(self._status)
+        self._status = RoboStatus.IDLE
+        loggerDrv.debug(str(self._status))
         self.onStatus(self._status)
 
     def mqtt_busy(self, client, user, msg):
