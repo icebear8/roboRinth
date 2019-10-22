@@ -9,6 +9,7 @@ loggerDrv = logging.getLogger(__name__)
 # onStatus(status)
 # onDirections(directions)
 # onColors(directionColor))
+# onError(errorStr)
 class RoboDriver:
     def __init__(self, topicPrefix='robo-03'):
       self.onStatus=None
@@ -36,7 +37,7 @@ class RoboDriver:
       if (dirEnum == RoboDirection.NORTH):
         dirString = "N"
       elif (dirEnum == RoboDirection.EAST):
-        dirString = "O"
+        dirString = "E"
       elif (dirEnum == RoboDirection.SOUTH):
         dirString = "S"
       elif (dirEnum == RoboDirection.WEST):
@@ -48,17 +49,17 @@ class RoboDriver:
       self._mqttClient = a_client
       # send init
       loggerDrv.debug("send Init..")
-      self._mqttClient.publish(self._topicPrefix+"/request/init",a_payload="",a_retain=True)
+      self._mqttClient.publish(self._topicPrefix+"/request/init",a_payload=None,a_retain=True)
 
     def driveDirection(self, direction=RoboDirection.NORTH):
       if self._mqttClient is not None:
-        self._mqttClient.publish(self._topicPrefix+"/request/driveDirections", self._toDirString(direction))
+        self._mqttClient.publish(self._topicPrefix+"/request/driveDirections", self._toDirString(direction),a_retain=True)
         loggerDrv.debug("driveDirection: " + str(direction))
 
     def discoverMode(self, enabled=False):
       if self._status == RoboStatus.IDLE:
         self._discoverMode = enabled
-        self._mqttClient.publish(self._topicPrefix + "/request/discoverDirections")
+        self._mqttClient.publish(self._topicPrefix + "/request/discoverDirections", a_payload=None, a_retain=False)
         loggerDrv.debug("discoverMode: " + str(self._discoverMode))
         return True
       else:
