@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def handleGyro(client, userdata, msg):
-  logger.debug("Gyro: " + msg.topic + " " + str(msg.payload.decode("utf-8")))
+  userdata['directionController'].updateAngle(client, userdata, msg)
 
 def handleColor(client, userdata, msg):
   #logger.debug("Color:" + str(msg.payload.decode("utf-8")))
