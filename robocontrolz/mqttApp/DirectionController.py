@@ -73,6 +73,7 @@ class DirectionController:
         self._mqtt.publish(self._roboName + '/request/steering/activate', json.dumps(parameters))
         self._directionState = DirectionState.IDLE
         self._turnState = TurnState.IDLE
+        self._mqtt.publish(self._roboName + '/notification/crossingReached')
 
     def discover(self, client, userdata, msg):
         print('discover')

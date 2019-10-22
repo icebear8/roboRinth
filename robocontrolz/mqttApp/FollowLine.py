@@ -90,6 +90,7 @@ class followLine:
             self.currentState = FollowLineState.reachCrossing
             logger.info("reach crossing")
             self.setMotorSpeed(FollowLineMotorSpeed.crossingSpeed)
+            self._client.publish(self._roboName + '/notification/crossingReached')
 
 
     def setMotorSpeed(self, speed):
