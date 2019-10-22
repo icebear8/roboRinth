@@ -15,7 +15,7 @@ class RoboDriver:
       self.onStatus=None
       self.onDirections=None
       self.onColors=None
-      self._discoverMode=True
+      self._discoverMode=False
       self._status=RoboStatus.BUSY
       self._topicPrefix=topicPrefix
       self._mqttClient = None
@@ -59,14 +59,18 @@ class RoboDriver:
         loggerDrv.debug("driveDirection: " + str(direction))
 
     def discoverMode(self, enabled=False):
-      if self._status == RoboStatus.IDLE:
+      if self._discoverMode == enabled:
+        return
+      else:
         self._discoverMode = enabled
-        self._mqttClient.publish(self._topicPrefix + "/request/discoverDirections")
-        loggerDrv.debug("discoverMode: " + str(self._discoverMode))
-        return True
+
+      if (self._status == RoboStatus.IDLE):
+        if (enabled is True):
+          self._mqttClient.publish(self._topicPrefix + "/request/discoverDirections")
+          self._status = RoboStatus.BUSY
+          loggerDrv.debug("discoverMode: " + str(self._discoverMode))
       else:
         loggerDrv.debug("switch to discoverMode not possible, Device is busy")
-        return False
 
     def getDiscoverMode(self):
       return self._discoverMode
