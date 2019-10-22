@@ -15,6 +15,25 @@ class Point:
         self.x = x
         self.y = y
 
+    def move(self, roboDirection):
+        dx = 0
+        dy = 0
+        if roboDirection == RoboDirection.NORTH:
+            dx = 0;
+            dy = 1;
+        elif roboDirection == RoboDirection.EAST:
+            dx = 1;
+            dy = 0;
+        elif roboDirection == RoboDirection.SOUTH:
+            dx = 0;
+            dy = -1;
+        else:
+            dx = -1;
+            dy = 0;
+        return Point(self.x + dx, self.y + dy)
+
+
+
     def __key(self):
         return (self.x, self.y)
 
@@ -106,6 +125,7 @@ class Map:
         loc = self._roboLocation
         curentNode = self.mapPoints[loc]
         availableDirections = curentNode.availableDirections
+        logger.debug("getAvailableDirec")
         result = []
         for dir in availableDirections:
             newPoint = Point(loc.x + dir.dx, loc.y + dir.dy)
@@ -149,7 +169,7 @@ class Map:
                     if nextPoint in visitedPoints:
                         continue
                     else:
-                        availablePoints.put(nextPoint, dist+1)
+                        availablePoints.put((nextPoint, dist+1))
             else:
                 hasUnexploredAncestor = True
                 distances.append(dist)

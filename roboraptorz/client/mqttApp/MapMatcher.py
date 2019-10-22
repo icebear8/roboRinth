@@ -16,16 +16,16 @@ class MapMatcher:
     def registerRobotDriver(self, mapName, robotDriver):
         self._roboMaps[mapName] = Map(mapName)
         callback = lambda dirs : self.onDirectionsCallback(mapName, dirs)
-        robotDriver.onDirections = callback
+        robotDriver.onColors = callback
 
-    def onDirectionsCallback(self, mapName, availableDirections):
+    def onDirectionsCallback(self, mapName, availableColorsDict):
         roboMap = self._roboMaps[mapName]
-        mappedDirections = map(self.mapDirectionToVector, availableDirections)
+        mappedDirections = map(self.mapDirectionToVector, availableColorsDict.items())
         roboMap.addDirectionsAtCurrentLocation(mappedDirections)
         if self.onMapUpdate:
             self.onMapUpdate(mapName)
 
-    def mapDirectionToVector(self, direction):
+    def mapDirectionToVector(self, direction, color):
         dx = 0
         dy = 0
         if direction == RoboDirection.NORTH:
