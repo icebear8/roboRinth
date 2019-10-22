@@ -56,7 +56,7 @@ class DirectionController:
         self._angleOffset = 0
         self._destinationAngle = 0
         self._lastColor = 'White'
-        self._directionColorList = {}
+        self._directionColorMap = {}
         self._directionState = DirectionState.IDLE
         self._turnState = TurnState.IDLE
         self._name = 'direction controller'
@@ -105,9 +105,8 @@ class DirectionController:
 
     def updateAngle(self, client, userdata, msg):
         self._rawAngle = int(msg.payload.decode("utf-8"))
-        #print(self.correctedAngle())
         if self._turnState == TurnState.TURN_ANGLE and self.isAngleReached():
-            print(self.correctedAngle())
+            #print(self.correctedAngle())
             self.processTurnEvent(TurnEvents.ANGLE_REACHED)
 
     def updateColor(self, msg):
@@ -172,11 +171,14 @@ class DirectionController:
                 # recurring action
                 print('DISCOVERY, recurring action')
                 print('add color to list: ' + angleToDirection[self.roundedAngle()] + ', ' + colors[data])
+                self._directionColorMap[angleToDirection[self.roundedAngle()]] = colors[data]
 
         elif self._directionState == DirectionState.DISCOVERY_FINISHED:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('DISCOVERY_FINISHED, entry action')
+                self._mqtt.publish(self._roboName + '/notification/availableDirectionsRaw', self.dirMapToList(self._directionColorMap))
+                self._directionColorMap = {}
                 self.processEvent(None)
             else:
                 # recurring action
@@ -208,12 +210,10 @@ class DirectionController:
                 if data < 0:
                     print('turn robot to the left')
                     parameters['steering'] = -100
-                    print("json dumps: " + json.dumps(parameters))
                     self._mqtt.publish(self._roboName + '/request/steering/activate', json.dumps(parameters))
                 if data > 0:
                     print('turn robot to the right')
                     parameters['steering'] = 100
-                    print("json dumps: " + json.dumps(parameters))
                     self._mqtt.publish(self._roboName + '/request/steering/activate', json.dumps(parameters))
                 self._turnState = TurnState.TURN_ANGLE
         elif self._turnState == TurnState.TURN_ANGLE:
