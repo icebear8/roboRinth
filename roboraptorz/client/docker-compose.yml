@@ -1,9 +1,9 @@
 version: '3'
 services:
-  mqttClient:
+  roboraptorz:
     build: .
-    image: icebear8/mqttclient:build
-    container_name: mqttclient
+    image: icebear8/roboraptorz:build
+    container_name: roboraptorz
     volumes:
       - ./mqttApp:/mnt/app
     env_file:
