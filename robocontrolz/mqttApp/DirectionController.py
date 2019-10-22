@@ -60,6 +60,10 @@ class DirectionController:
         else:
             print('error: robot busy, discover not allowed')
 
+    def convertAngle(self, desiredangle):
+        steering = 100 if desiredangle > 0 else -100
+        angle = desiredangle / 2
+        return steering, angle
 
     def turn(self, client, userdata, msg):
         print('turn')
