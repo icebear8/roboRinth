@@ -17,7 +17,7 @@ class Position:
     def __str__(self):
         return str(self.__class__) + ": (" + str(self.x) + " " + str(self.y) +")"
 
-    def new_pos_in_direction(self, direction: Direction, distance: 1) -> 'Position':
+    def new_pos_in_direction(self, direction: Direction, distance: int = 1) -> 'Position':
         offsets = {
             Direction.NORTH: Position(0, -distance),
             Direction.EAST: Position(distance, 0),
