@@ -10,23 +10,39 @@ ARG GID=1000
 
 # Environment variables for the service
 ENV SERVICE_ARGS="--host=localhost --port=1883"
+ENV UTILS_DIR=/opt/utils
+ENV APP_LAUNCHER=${UTILS_DIR}/launcher.sh
 ENV APP_DIR=/opt/mqttclient
+ENV WEB_UI_DIR=/opt/webui
 
 RUN apk update && apk add --no-cache \
+  nodejs \
+  nodejs-npm \
   python3 \
   && apk del --purge
 
 RUN pip3 install paho-mqtt
+RUN pip3 install websockets
 
 # Create user
 RUN addgroup -g ${GID} ${GROUP} \
   && adduser -u ${UID} -G ${GROUP} -D ${USER}
 
 COPY ./mqttApp ${APP_DIR}/
+COPY ./webui ${WEB_UI_DIR}
+
+# Prepare utilities
+RUN mkdir -p ${UTILS_DIR}
+COPY ./utils/* ${UTILS_DIR}/
+
+WORKDIR ${WEB_UI_DIR}
+RUN npm install
 
 RUN chown -R ${USER} ${APP_DIR}
+RUN chown -R ${USER} ${WEB_UI_DIR}
+RUN chmod -R 755 ${UTILS_DIR}/*.sh
 
 USER ${USER}
 
 ENTRYPOINT ["sh", "-c"]
-CMD ["python3 ${APP_DIR}/mqttapp.py ${SERVICE_ARGS}"]
+CMD ["sh ${APP_LAUNCHER}"]
