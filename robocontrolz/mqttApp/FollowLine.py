@@ -12,7 +12,8 @@ class FollowLineState(enum.Enum):
     lostLineSearchRight = 3
     lostLineSearchLeft = 4
     lostLineSearchCenter = 5
-    reachCrossing = 6
+    lostLineSearchCrossingCenter = 6
+    reachCrossing = 7
 
 class FollowLineMotorSpeed(enum.Enum):
     stop = 1
@@ -21,12 +22,15 @@ class FollowLineMotorSpeed(enum.Enum):
     rotatingSpeed = 4
 
 class followLine:
-    SEARCH_ANGLE = 20
+    SEARCH_ANGLE = 30
     SEARCH_WAIT_TIME = 1
     SEARCH_SPEED = 5
     LINE_SPEED = 15
     CROSSING_SPEED = 30
     CROSSING_ANGLE = 230
+    CROSSING_WAIT_TIME = 0.9
+
+    __searchTimer = None
 
     def __init__(self):
         logger.warning("FollowLine Constructor ")
@@ -51,12 +55,18 @@ class followLine:
                 logger.debug("got White while driving: Lost line")
                 self.currentState = FollowLineState.lostLineSearchRight
                 self.setMotorSpeed(FollowLineMotorSpeed.rotatingSpeed)
-                threading.Timer(self.SEARCH_WAIT_TIME, self.handleTurnFinished).start()
+                if (self.__searchTimer):
+                    self.__searchTimer.cancel()
+                self.__searchTimer = threading.Timer(self.SEARCH_WAIT_TIME, self.handleTurnFinished)
+                self.__searchTimer.start()
+                #threading.Timer(self.SEARCH_WAIT_TIME, self.handleTurnFinished).start()
                 logger.debug("startSearchRight")
                 #self._client.publish(self._roboName+"/request/txt", "White, in Driving")
 
         if ((self.currentState == FollowLineState.lostLineSearchLeft) or (self.currentState == FollowLineState.lostLineSearchRight)):
             if (self.isLineColor(msg)):
+                if (self.__searchTimer):
+                    self.__searchTimer.cancel()
                 logger.debug("got Black while lineSearch")
                 #self._client.publish(self._roboName+"/request/txt", "Black, in LostLine")
 
@@ -74,7 +84,10 @@ class followLine:
             controlString = "{\"speed\":\""+str(self.SEARCH_SPEED)+"\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
             self._client.publish(self._roboName+"/request/steering/turn", controlString)
             self.currentState = FollowLineState.lostLineSearchLeft
-            threading.Timer(self.SEARCH_WAIT_TIME * 2, self.handleTurnFinished).start()
+            if (self.__searchTimer):
+                self.__searchTimer.cancel()
+            self.__searchTimer = threading.Timer(self.SEARCH_WAIT_TIME * 2, self.handleTurnFinished)
+            self.__searchTimer.start()
             logger.debug("startSearchLeft")
             logger.debug(controlString)
 
@@ -83,15 +96,25 @@ class followLine:
             controlString = "{\"speed\":\""+str(self.SEARCH_SPEED)+"\",\"steering\":\"" + str(steering)+"\",\"angle\":\""+str(angle)+"\"""}"
             self._client.publish(self._roboName+"/request/steering/turn", controlString)
             self.currentState = FollowLineState.lostLineSearchCenter
-            threading.Timer(self.SEARCH_WAIT_TIME, self.handleTurnFinished).start()
+            if (self.__searchTimer):
+                self.__searchTimer.cancel()
+            self.__searchTimer = threading.Timer(self.SEARCH_WAIT_TIME, self.handleTurnFinished)
+            self.__searchTimer.start()
             logger.debug("startSearchCenter")
             logger.debug(controlString)
         elif (self.currentState == FollowLineState.lostLineSearchCenter):
-            self.currentState = FollowLineState.reachCrossing
+            self.currentState = FollowLineState.lostLineSearchCrossingCenter
             logger.info("reach crossing")
             self.setMotorSpeed(FollowLineMotorSpeed.crossingSpeed)
-            self._client.publish(self._roboName + '/notification/crossingReached')
+            if (self.__searchTimer):
+                self.__searchTimer.cancel()
+            self.__searchTimer = threading.Timer(self.CROSSING_WAIT_TIME, self.handleTurnFinished)
+            self.__searchTimer.start()
 
+        elif (self.currentState == FollowLineState.lostLineSearchCrossingCenter):
+            self.currentState = FollowLineState.reachCrossing
+            logger.info("crossing reached")
+            self._client.publish(self._roboName + '/notification/crossingReached')
 
     def setMotorSpeed(self, speed):
         if (speed == FollowLineMotorSpeed.stop):
