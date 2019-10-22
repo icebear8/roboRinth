@@ -20,7 +20,6 @@ class MapMatcher:
 
     def onDirectionsCallback(self, mapName, availableDirections):
         map = self._roboMaps[mapName]
-        currentPosition = map.getRobotLocation()
         for direction in availableDirections:
             dx = 0
             dy = 0
@@ -37,4 +36,7 @@ class MapMatcher:
                 dx = -1
                 dy = 0
             relativeDirection = RelativeDirection(dx, dy)
-            map.addMapPoint((currentPosition, relativeDirection))
+            map.addDirectionAtCurrentLocation(relativeDirection)
+        dirs = map.getAvailableDirections()
+        for dir in dirs:
+            logger.debug("Available direction: " + str(dir.direction) + " with explored: " + str(dir.explored) + " and hasUnexploredChildren " + str(dir.hasUnexploredChildren()))
