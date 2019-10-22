@@ -31,8 +31,8 @@ class Control:
       return
 
     logger.debug(self.roboName + "OnMapUpdate: " + mapName)
-    if (status is RoboStatus.IDLE) and (self._roboDriver.getDiscoverMode() is True):
-    self._triggerExploreStep()
+    if (self._roboDriver.getStatus() is RoboStatus.IDLE) and (self._roboDriver.getDiscoverMode() is True):
+      self._triggerExploreStep()
 
   # Callbacks driver
   def _onRoboStatus(self, status):

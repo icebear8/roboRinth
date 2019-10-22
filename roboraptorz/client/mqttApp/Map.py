@@ -172,7 +172,7 @@ class Map:
                     hasUnexploredAncestor = True
                     distances.append(dist)
 
-                for dir in currentPoint.availableDirections:
+                for dir in currentNode.availableDirections:
                     nextPoint = Point(currentPoint.x + dir.dx, currentPoint.y + dir.dy)
                     if nextPoint in visitedPoints:
                         continue

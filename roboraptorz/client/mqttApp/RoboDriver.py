@@ -49,18 +49,18 @@ class RoboDriver:
       self._mqttClient = a_client
       # send init
       loggerDrv.debug("send Init..")
-      self._mqttClient.publish(self._topicPrefix+"/request/init",a_payload=None,a_retain=True)
+      self._mqttClient.publish(self._topicPrefix+"/request/init")
 
     def driveDirection(self, direction=RoboDirection.NORTH):
       if self._mqttClient is not None:
         payLoad = "[\"" + self._toDirString(direction) + "\"]"
-        self._mqttClient.publish(self._topicPrefix+"/request/driveDirections",a_payload=payLoad, a_retain=True)
+        self._mqttClient.publish(self._topicPrefix+"/request/driveDirections",a_payload=payLoad)
         loggerDrv.debug("driveDirection: " + str(direction))
 
     def discoverMode(self, enabled=False):
       if self._status == RoboStatus.IDLE:
         self._discoverMode = enabled
-        self._mqttClient.publish(self._topicPrefix + "/request/discoverDirections", a_payload=None, a_retain=False)
+        self._mqttClient.publish(self._topicPrefix + "/request/discoverDirections")
         loggerDrv.debug("discoverMode: " + str(self._discoverMode))
         return True
       else:
