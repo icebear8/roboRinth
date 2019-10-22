@@ -1,6 +1,7 @@
 import logging
 import Robot
 import copy
+import curses
 from matrix import Matrix
 
 logger = logging.getLogger(__name__)
@@ -59,8 +60,9 @@ class Map(object):
                         if not char == '+':
                             self.registerRobot(copy.deepcopy(v1), char)
         self.connections = list(tempSet)
+        self.draw()
 
-    def draw(self, edgeLength=3):
+    def asciiDraw(self, edgeLength=3):
         # create data list
         xmax = 0
         ymax = 0
@@ -91,8 +93,11 @@ class Map(object):
             r_x = int(robot.globalPosition[0][0]) * edgeLength
             r_y = int(robot.globalPosition[1][0]) * edgeLength
             data[r_x][r_y] = 'o'
+        return data
 
-        for line in data:
+    def draw(self, edgeLength=3):
+        lines = self.asciiDraw(edgeLength)
+        for line in lines:
             print(''.join(line))
 
     def getRobots(self):
@@ -141,16 +146,16 @@ if __name__ == "__main__":
     map.draw()
     r = map.getRobots()[0]
 
-    print(r.globalPosition)
-    print(r.scan())
+    #print(r.globalPosition)
+    #print(r.scan())
     vlocal = Matrix._makeMatrix([[-1], [0]])
-    map.draw()
+
     r.moveLocal(vlocal)
-    map.draw()
-    print(r.globalPosition)
-    print(r.scan())
+
+    #print(r.globalPosition)
+    #print(r.scan())
     r.moveLocal(vlocal)
-    map.draw()
-    print(r.globalPosition)
-    print(r.scan())
+
+    #print(r.globalPosition)
+    #print(r.scan())
 

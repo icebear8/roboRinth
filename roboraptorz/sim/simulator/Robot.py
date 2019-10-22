@@ -16,6 +16,9 @@ class Robot(object):
         strlist = [ "[\"" + "\",\"".join(item) + "\"]" for item in listOfLists]
         return  "[" + ",".join(strlist) + "]"
 
+    def sendBusy(self):
+        self.notify("busy","")
+
     def sendAvailableDirections(self, listOfLists):
         self.notify("availableDirections", self.makeAvailableDirectionsJson(listOfLists))
 
@@ -44,6 +47,7 @@ class Robot(object):
 
     def driveDirections(self, direction):
         logger.debug("Got drive Direction: %s"%(direction))
+        self.sendBusy()
         v = Matrix._makeMatrix([[1], [0]])
         if direction == "N":
             v = Matrix._makeMatrix([[1], [0]])
@@ -67,6 +71,7 @@ class Robot(object):
 
     def discoverDirections(self):
         logger.debug("Got discoverDirections")
+        self.sendBusy()
         timer = threading.Timer(2, self.onDisconverDirections)
         timer.start()
 
@@ -77,6 +82,7 @@ class Robot(object):
     def moveGlobal(self, direction):
         if self.map.isConnection(self.globalPosition, direction):
             self.globalPosition += direction
+            self.map.draw()
             return True
         return False
 

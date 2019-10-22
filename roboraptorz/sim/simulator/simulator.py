@@ -3,12 +3,12 @@
 import argparse
 import logging
 import time
-
+import threading
 from MqttHandler import MqttHandler
 
 logger = logging.getLogger(__name__)
 
-client = None
+running = True
 
 def _initializeLogging(loglevel):
   numeric_level = getattr(logging, loglevel.upper(), None)
@@ -18,14 +18,22 @@ def _initializeLogging(loglevel):
   logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=numeric_level)
   logging.Formatter.converter = time.gmtime
 
-def _printUsage():
-  print('mqttapp.py [--host=, --port=, --log=]')
-  print('--host=: Host name or IP to connect')
-  print('--port=: Port to connect')
-  print('--clientId=: MQTT client connection id')
-  print('--log=: Loglevel [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
+def mapPrinter(map):
+  global running
+
+  while (running):
+    lines = map.asciiDraw()
+    for i in range(len(lines)):
+      # move up characters
+      print("\033[F")
+
+    for line in lines:
+      print("".join(line))
+
+    time.sleep(1)
 
 def main():
+  global running
   parser = argparse.ArgumentParser(description='RoboRinth Robot Simulator')
   parser.add_argument('--host', type=str, help='host of the mqtt broker to connect', default = "192.168.0.200")
   parser.add_argument('--port', type=int, default=1883, help='port of the mqtt broker to connect')
@@ -44,10 +52,15 @@ def main():
 
   handler._client.startAsync()
   time.sleep(2)
+  printerThread = threading.Thread(target=mapPrinter, args=[handler.map])
+  printerThread.start()
 
+  # block until we want to shut down
   input("\n\nPress Enter to abort...\n\n")
+  running = False
 
   # Terminate
+  printerThread.join()
   handler._client.stop()
 
   logger.debug("Terminate")

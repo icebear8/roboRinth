@@ -42,7 +42,11 @@ class RobotForwarder(object):
 
   def driveHandler(self, client, userdata, msg):
     logger.debug("Got drive")
-    data = json.loads(msg.payload)
+    try:
+      data = json.loads(msg.payload)
+    except:
+      logger.warn("Could not parse payload %s"%(msg.payload))
+      return False
 
     if len(data) > 1:
       logger.warn("driveHandler has too many items")
