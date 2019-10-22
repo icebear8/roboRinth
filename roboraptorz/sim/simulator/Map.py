@@ -1,5 +1,6 @@
 import logging
 import Robot
+import copy
 from matrix import Matrix
 
 logger = logging.getLogger(__name__)
@@ -56,10 +57,11 @@ class Map(object):
 
                         # check for connections
                         if not char == '+':
-                            self.registerRobot(v1, char)
+                            self.registerRobot(copy.deepcopy(v1), char)
         self.connections = list(tempSet)
 
     def draw(self, edgeLength=3):
+        # create data list
         xmax = 0
         ymax = 0
         for c in self.connections:
@@ -70,16 +72,25 @@ class Map(object):
 
         data = [ [' ']*(ymax*edgeLength+1) for i in range(xmax*edgeLength +1)]
 
-        print(data)
+        # add connections
         for c in self.connections:
-            m = int(c.start[0][0]) * edgeLength
-            n = int(c.start[1][0]) * edgeLength
-            print(xmax, ymax, m, n)
-            data[m][n] = '+'
-            for i in range(int(c.direction[0][0]) * edgeLength):
-                data[m+i+1][n] = '|'
-            for i in range(int(c.direction[1][0]) * edgeLength):
-                data[m][n+i+1] = '-'
+            start_x = int(c.start[0][0] * edgeLength)
+            start_y = int(c.start[1][0] * edgeLength)
+            end = c.start + c.direction
+            end_x = int(end[0][0] * edgeLength)
+            end_y = int(end[1][0] * edgeLength)
+            data[start_x][start_y] = '+'
+            for i in range(start_x, end_x):
+                data[i+1][start_y] = '|'
+            for i in range(start_y, end_y):
+                data[start_x][i+1] = '-'
+            data[end_x][end_y] = '+'
+
+        # add robot
+        for robot in self.robots:
+            r_x = int(robot.globalPosition[0][0]) * edgeLength
+            r_y = int(robot.globalPosition[1][0]) * edgeLength
+            data[r_x][r_y] = 'o'
 
         for line in data:
             print(''.join(line))
@@ -127,16 +138,19 @@ class Map(object):
 if __name__ == "__main__":
     map = Map()
     map.loadMap("default.map")
-
+    map.draw()
     r = map.getRobots()[0]
 
     print(r.globalPosition)
     print(r.scan())
     vlocal = Matrix._makeMatrix([[-1], [0]])
+    map.draw()
     r.moveLocal(vlocal)
+    map.draw()
     print(r.globalPosition)
     print(r.scan())
     r.moveLocal(vlocal)
+    map.draw()
     print(r.globalPosition)
     print(r.scan())
 
