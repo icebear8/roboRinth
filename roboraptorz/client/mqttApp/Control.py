@@ -27,14 +27,17 @@ class Control:
 
   # Callbacks map
   def _onMapUpdate(self, mapName):
-    if mapName in (self.roboName):
-      logger.debug(self.roboName + "OnMapUpdate: " + mapName)
-      self._triggerExploreStep()
+    if mapName not in (self.roboName):
+      return
+
+    logger.debug(self.roboName + "OnMapUpdate: " + mapName)
+    if (status is RoboStatus.IDLE) and (self._roboDriver.getDiscoverMode() is True):
+    self._triggerExploreStep()
 
   # Callbacks driver
   def _onRoboStatus(self, status):
     logger.debug(self.roboName + "OnRoboStatus: " + str(status))
-    if status is RoboStatus.IDLE:
+    if (status is RoboStatus.IDLE) and (self._roboDriver.getDiscoverMode() is True):
       self._triggerExploreStep()
 
 
