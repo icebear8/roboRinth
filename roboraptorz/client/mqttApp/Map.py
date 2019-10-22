@@ -75,11 +75,12 @@ class Map:
         self.mapPoints = { initalLocation: self.MapNode(initalLocation)}
         self.pointsOfInterest = {}
 
-    def addDirectionAtCurrentLocation(self, direction):
+    def addDirectionsAtCurrentLocation(self, directions):
         point = self.getRobotLocation()
-        logger.debug(self._mapName + ": setting connection from (" + str(point.x) + "," + str(point.y) + ") to (" + str(direction.dx) + "," + str(direction.dy) + ")")
         mapPoint = self.mapPoints[point]
-        mapPoint.addAvailableDirection(direction)
+        for direction in directions:
+            logger.debug(self._mapName + ": setting connection from (" + str(point.x) + "," + str(point.y) + ") to (" + str(direction.dx) + "," + str(direction.dy) + ")")
+            mapPoint.addAvailableDirection(direction)
 
     def setRobotLocation(self, point):
         logger.debug(self._mapName + ": setting robot location at (" + str(point.x) + "," + str(point.y) + ")")
@@ -124,7 +125,6 @@ class Map:
                 result.append(availableDirection)
         return result
 
-
     def _hasNodeUnexploredChildren(self, node):
         distances = []
         hasUnexploredAncestor = False
@@ -158,9 +158,6 @@ class Map:
             return (True, min(distances))
         else:
             return (False, -1)
-
-
-
 
     def parseDirection(self, direction):
         logger.debug("parsing direction: dx = " + str(direction.dx) + " dy = " + str(direction.dy))

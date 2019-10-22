@@ -19,24 +19,25 @@ class MapMatcher:
         robotDriver.onDirections = callback
 
     def onDirectionsCallback(self, mapName, availableDirections):
-        map = self._roboMaps[mapName]
-        for direction in availableDirections:
+        roboMap = self._roboMaps[mapName]
+        mappedDirections = map(self.mapDirectionToVector, availableDirections)
+        roboMap.addDirectionsAtCurrentLocation(mappedDirections)
+        if self.onMapUpdate:
+            self.onMapUpdate(mapName)
+
+    def mapDirectionToVector(self, direction):
+        dx = 0
+        dy = 0
+        if direction == RoboDirection.NORTH:
             dx = 0
+            dy = 1
+        elif direction == RoboDirection.EAST:
+            dx = 1
             dy = 0
-            if direction == RoboDirection.NORTH:
-                dx = 0
-                dy = 1
-            elif direction == RoboDirection.EAST:
-                dx = 1
-                dy = 0
-            elif direction == RoboDirection.SOUTH:
-                dx = 0
-                dy = -1
-            else:
-                dx = -1
-                dy = 0
-            relativeDirection = RelativeDirection(dx, dy)
-            map.addDirectionAtCurrentLocation(relativeDirection)
-        dirs = map.getAvailableDirections()
-        for dir in dirs:
-            logger.debug("Available direction: " + str(dir.direction) + " with explored: " + str(dir.explored) + " and hasUnexploredChildren " + str(dir.hasUnexploredChildren()))
+        elif direction == RoboDirection.SOUTH:
+            dx = 0
+            dy = -1
+        else:
+            dx = -1
+            dy = 0
+        return RelativeDirection(dx, dy)
