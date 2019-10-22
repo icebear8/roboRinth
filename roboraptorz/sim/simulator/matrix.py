@@ -1,400 +1,281 @@
-# -*- Mode: Python; tab-width: 4 -*-
-#
-#	Author: Sam Rushing <rushing@nightmare.com>
-#
-# One goal is to work with any object type that supports the numeric
-# protocol.  (i.e., classes for rationals, complex or even matrices)
-#
-# Algorithms are from
-# Cormen, Leiserson & Rivest, <Introduction to Algorithms>, Ch. 31
-#
-# Warning: ItoA thinks a[i,j] == a[row,column], whereas I
-# think a[i,j] == a[column, row].  beware of arbitrary-seeming
-# index-reversals!
+import random
+import operator
+import sys
+import unittest
 
-# Note: I made a small change to yarn.py, in order to better accomodate
-# this sort of thing:  yarn.Rat (Rat(1,3), Rat(1,4))
-#
-# 252c252,256
-# <                       n, d = long(args[0]), long(args[1])
-# ---
-# >                       if ((type(args[0]) != types.InstanceType)
-# >                           or self.__class__ != args[0].__class__):
-# >                           n, d = long(args[0]), long(args[1])
-# >                       else:
-# >                           n, d = args[0], args[1]
+__version__ = "0.3"
 
-class matrix:
+class MatrixError(Exception):
+    """ An exception class for Matrix """
+    pass
 
-	def __init__ (self, size=(3,3)):
-		if (type(size) == type([])):
-			# another option for creation
-			self.v = size
-		else:
-			c, r = size
-			rows = range(r)
-			for i in range(r):
-				rows[i] = [0]*c
-			self.v = rows
+class Matrix(object):
+    """ A simple Python matrix class with
+    basic operations and operator overloading """
+    
+    def __init__(self, m, n, init=True):
+        if init:
+            self.rows = [[0]*n for x in range(m)]
+        else:
+            self.rows = []
+        self.m = m
+        self.n = n
+        
+    def __getitem__(self, idx):
+        return self.rows[idx]
 
-	# --------------------------------------------------
-	# mutation
-	# --------------------------------------------------
+    def __setitem__(self, idx, item):
+        self.rows[idx] = item
+        
+    def __str__(self):
+        s='\n'.join([' '.join([str(item) for item in row]) for row in self.rows])
+        return s + '\n'
 
-	def size (self):
-		"returns (columns, rows)"
-		return len(self.v[0]), len(self.v)
+    def __repr__(self):
+        s=str(self.rows)
+        rank = str(self.getRank())
+        rep="Matrix: \"%s\", rank: \"%s\"" % (s,rank)
+        return rep
+    
+    def reset(self):
+        """ Reset the matrix data """
+        self.rows = [[] for x in range(self.m)]
+                     
+    def transpose(self):
+        """ Transpose the matrix. Changes the current matrix """
+        
+        self.m, self.n = self.n, self.m
+        self.rows = [list(item) for item in zip(*self.rows)]
 
-	def __setitem__ (self, (x,y), v):
-		self.v[y][x] = v
+    def getTranspose(self):
+        """ Return a transpose of the matrix without
+        modifying the matrix itself """
+        
+        m, n = self.n, self.m
+        mat = Matrix(m, n)
+        mat.rows =  [list(item) for item in zip(*self.rows)]
+        
+        return mat
 
-	set = __setitem__
+    def getRank(self):
+        return (self.m, self.n)
 
+    def __eq__(self, mat):
+        """ Test equality """
 
-	def __getitem__ (self, (x,y)):
-		return self.v[y][x]
+        return (mat.rows == self.rows)
+        
+    def __add__(self, mat):
+        """ Add a matrix to this matrix and
+        return the new matrix. Doesn't modify
+        the current matrix """
+        
+        if self.getRank() != mat.getRank():
+            raise (MatrixError, "Trying to add matrixes of varying rank!")
 
-	get = __getitem__
+        ret = Matrix(self.m, self.n)
+        
+        for x in range(self.m):
+            row = [sum(item) for item in zip(self.rows[x], mat[x])]
+            ret[x] = row
 
+        return ret
 
-	# --------------------------------------------------
-	# iteration
-	# --------------------------------------------------
+    def __sub__(self, mat):
+        """ Subtract a matrix from this matrix and
+        return the new matrix. Doesn't modify
+        the current matrix """
+        
+        if self.getRank() != mat.getRank():
+            raise (MatrixError, "Trying to add matrixes of varying rank!")
 
-	def iterate (self, f):
-		nc, nr = self.size()
-		for r in range(nr):
-			for c in range(nc):
-				f(c,r,self[c,r])
+        ret = Matrix(self.m, self.n)
+        
+        for x in range(self.m):
+            row = [item[0]-item[1] for item in zip(self.rows[x], mat[x])]
+            ret[x] = row
 
-	def map (self, f):
-		"self[c,r] = f (c,r,value)"
-		nc, nr = self.size()
-		for r in range(nr):
-			for c in range(nc):
-				self[c,r] = f(c,r,self[c,r])
+        return ret
 
-	# --------------------------------------------------
-	# properties
-	# --------------------------------------------------
+    def __mul__(self, mat):
+        """ Multiple a matrix with this matrix and
+        return the new matrix. Doesn't modify
+        the current matrix """
+        
+        matm, matn = mat.getRank()
+        
+        if (self.n != matm):
+            raise (MatrixError, "Matrices cannot be multipled!")
+        
+        mat_t = mat.getTranspose()
+        mulmat = Matrix(self.m, matn)
+        
+        for x in range(self.m):
+            for y in range(mat_t.m):
+                mulmat[x][y] = sum([item[0]*item[1] for item in zip(self.rows[x], mat_t[y])])
 
-	def square (self):
-		c,r = self.size()
-		return c == r
+        return mulmat
 
-	def _square_check (self):
-		c,r = self.size()
-		if (c != r):
-			raise ValueError, "matrix must be square"
+    def __iadd__(self, mat):
+        """ Add a matrix to this matrix.
+        This modifies the current matrix """
 
-	def symmetric (self):
-		return self == self.transpose()
+        # Calls __add__
+        tempmat = self + mat
+        self.rows = tempmat.rows[:]
+        return self
 
-	# must be square
-	def determinant (self):
-		c, r = self.size()
-		self._square_check()
-		if c == 2:
-			try:
-				return (self[0,0] * self[1,1]) - (self[0,1] * self[1,0])
-			except OverflowError:
-				return (long(self[0,0]) * self[1,1]) - (long(self[0,1]) * self[1,0])
-		else:
-			sum = 0
-			f = 1
-			for i in range(c):
-				try:
-					sum = sum + ((self[i,0]) * self.minor((i,0)).determinant() * f)
-				except OverflowError:
-					sum = sum + ((long(self[i,0]) * self.minor((i,0)).determinant() * f))
-				f = -f
-			return sum
+    def __isub__(self, mat):
+        """ Add a matrix to this matrix.
+        This modifies the current matrix """
 
-	def singular (self):
-		return not self.determinant()
+        # Calls __sub__
+        tempmat = self - mat
+        self.rows = tempmat.rows[:]     
+        return self
 
-	# --------------------------------------------------
-	# operations
-	# --------------------------------------------------
+    def __imul__(self, mat):
+        """ Add a matrix to this matrix.
+        This modifies the current matrix """
 
-	def transpose (self):
-		r,c = self.size()
-		n = matrix ((c,r))
-		self.iterate (
-			lambda r,c,v,n=n: n.set ((c,r),v)
-			)
-		return n
+        # Possibly not a proper operation
+        # since this changes the current matrix
+        # rank as well...
+        
+        # Calls __mul__
+        tempmat = self * mat
+        self.rows = tempmat.rows[:]
+        self.m, self.n = tempmat.getRank()
+        return self
 
-	def __cmp__ (self, other):
-		ss = self.size()
-		os = other.size()
-		if (ss != os):
-			return 1
-		else:
-			# this does a 'deep' compare
-			return not (self.v == other.v)
+    def save(self, filename):
+        open(filename, 'w').write(str(self))
+        
+    @classmethod
+    def _makeMatrix(cls, rows):
 
-	def __neg__ (self):
-		n = matrix(self.size())
-		n.map (lambda c,r,v: -v)
-		return n
+        m = len(rows)
+        n = len(rows[0])
+        # Validity check
+        if any([len(row) != n for row in rows[1:]]):
+            raise (MatrixError, "inconsistent row length")
+        mat = Matrix(m,n, init=False)
+        mat.rows = rows
 
-	def __add__ (self, other):
-		if (self.size() != other.size()):
-			raise ValueError, "dimensions do not match"
-		new = matrix (self.size())
+        return mat
+        
+    @classmethod
+    def makeRandom(cls, m, n, low=0, high=10):
+        """ Make a random matrix with elements in range (low-high) """
+        
+        obj = Matrix(m, n, init=False)
+        for x in range(m):
+            obj.rows.append([random.randrange(low, high) for i in range(obj.n)])
 
-		def adder (c,r,v,s=self,o=other,n=new):
-			n[c,r] = v + o[c,r]
+        return obj
 
-		self.iterate (adder)
-		return new
+    @classmethod
+    def makeZero(cls, m, n):
+        """ Make a zero-matrix of rank (mxn) """
 
-	def __sub__ (self, other):
-		return self + (-other)
+        rows = [[0]*n for x in range(m)]
+        return cls.fromList(rows)
 
-	def __mul__ (self, other):
-		ss = self.size()
-		os = other.size()
-		if (ss[0] != os[1]):
-			raise ValueError, "dimensions do not match"
-		new = matrix ((os[0],ss[1]))
-		for i in range(os[0]):
-			for j in range(ss[1]):
-				sum = 0
-				for k in range (ss[0]):
-					sum = sum + (self[k,j] * other[i,k])
-				new[i,j] = sum
-		return new
+    @classmethod
+    def makeId(cls, m):
+        """ Make identity matrix of rank (mxm) """
 
-	def scalar_multiply (self, factor):
-		new = matrix (self.size())
-		def multiplier (c,r,v,n=new,f=factor):
-			n[c,r] = v * f
+        rows = [[0]*m for x in range(m)]
+        idx = 0
+        
+        for row in rows:
+            row[idx] = 1
+            idx += 1
 
-		self.iterate (multiplier)
-		return new
+        return cls.fromList(rows)
+    
+    @classmethod
+    def readStdin(cls):
+        """ Read a matrix from standard input """
+        
+        print ('Enter matrix row by row. Type "q" to quit')
+        rows = []
+        while True:
+            line = sys.stdin.readline().strip()
+            if line=='q': break
 
-	def copy (self):
-		v = []
-		for row in self.v:
-			v.append (row[:])
-		return matrix (v)
+            row = [int(x) for x in line.split()]
+            rows.append(row)
+            
+        return cls._makeMatrix(rows)
 
-	def minor (self, (i,j)):
-		nc,nr = self.size()
-		n = self.copy()
-		for nj in range(nr):
-			row = n.v[nj]
-			for ni in range(nc):
-				if ni == i:
-					del row[i]
-		del n.v[j]
-		return n
+    @classmethod
+    def readGrid(cls, fname):
+        """ Read a matrix from a file """
 
-	def inverse (self):
-		return inverse (self)
+        rows = []
+        for line in open(fname).readlines():
+            row = [int(x) for x in line.split()]
+            rows.append(row)
 
-	# --------------------------------------------------
-	# protocol
-	# --------------------------------------------------
+        return cls._makeMatrix(rows)
 
-	def __repr__ (self):
-		c,r = self.size()
-		m = 0
-		# find the fattest element
-		for r in self.v:
-			for c in r:
-				#l = len(repr(c))
-				l = len(str(c))
-				if l > m:
-					m = l
-		f = '%%%ds' % (m+1)
-		s = '<matrix'
-		for r in self.v:
-			s = s + '\n'
-			for c in r:
-				#s = s + (f % repr(c))
-				s = s + (f % str(c))
-		s = s + '>'
-		return s
+    @classmethod
+    def fromList(cls, listoflists):
+        """ Create a matrix by directly passing a list
+        of lists """
 
-def vector (init):
-	if type(init) == type(1):
-		return matrix ((init,1))
-	else:
-		return matrix ([init])
+        # E.g: Matrix.fromList([[1 2 3], [4,5,6], [7,8,9]])
 
-def identity (n=3):
-	new = matrix ((n,n))
-	for i in range(n):
-		new[i,i] = 1
-	return new
+        rows = listoflists[:]
+        return cls._makeMatrix(rows)
+        
 
-def zero (r=3,c=3):
-	return matrix ((r,c))
+class MatrixTests(unittest.TestCase):
 
-class piper:
-	def __getattr__ (self, name):
-		if name == 'Rat':
-			import yarn
-			return yarn.Rat
-		else:
-			raise AttributeError, name
+    def testAdd(self):
+        m1 = Matrix.fromList([[1, 2, 3], [4, 5, 6]])
+        m2 = Matrix.fromList([[7, 8, 9], [10, 11, 12]])        
+        m3 = m1 + m2
+        self.assertTrue(m3 == Matrix.fromList([[8, 10, 12], [14,16,18]]))
 
-# pretends to be a module
-Rat = piper()
+    def testSub(self):
+        m1 = Matrix.fromList([[1, 2, 3], [4, 5, 6]])
+        m2 = Matrix.fromList([[7, 8, 9], [10, 11, 12]])        
+        m3 = m2 - m1
+        self.assertTrue(m3 == Matrix.fromList([[6, 6, 6], [6, 6, 6]]))
 
-# --------------------------------------------------
-# generate various types of matrices
-# --------------------------------------------------
+    def testMul(self):
+        m1 = Matrix.fromList([[1, 2, 3], [4, 5, 6]])
+        m2 = Matrix.fromList([[7, 8], [10, 11], [12, 13]])
+        self.assertTrue(m1 * m2 == Matrix.fromList([[63, 69], [150, 165]]))
+        self.assertTrue(m2*m1 == Matrix.fromList([[39, 54, 69], [54, 75, 96], [64, 89, 114]]))
 
-def hilbert (n=3):
-	new = matrix ((n,n))
-	new.map (lambda i,j,v: Rat.Rat(1,i+1+j))
-	return new
+    def testTranspose(self):
 
-def complex_index (n=3):
-	new = matrix ((n,n))
-	new.map (lambda c,r,v: complex(c,r))
-	return new
+        m1 = Matrix.makeRandom(25, 30)
+        zerom = Matrix.makeZero(25, 30)
+        m2 = m1 + zerom
+        
+        m1.transpose()
+        m1.transpose()
+        self.assertTrue(m2 == m1)
 
-def random_square (n=3,w=10):
-	import random
-	new = matrix((n,n))
-	new.map (lambda c,r,v,w=w: random.randint (1,w))
-	return new
+        # Also test getTranspose
+        m2 = m1.getTranspose()
+        r2 = m2.getRank()
 
-def meta_random_square (n=3,w=10):
-	new = matrix((n,n))
-	new.map (lambda c,r,v,n=n,w=w: random_square (n,w))
-	return new
+        self.assertTrue(r2==(30,25))
+        m2.transpose()
 
-# --------------------------------------------------
-# solving simultaneous linear equations
-# --------------------------------------------------
+        self.assertTrue(m2 == m1)
 
-# l,u,p must be square, and the same size
-# p is a permutation 'array', not really a matrix.
-# [should we make it one for consistency?]
+    def testId(self):
 
-def lup_solve (l, u, p, b):
-	n = l.size()[0]
-	y = b.copy()
-	# forward
-	for i in range(n):
-		sum = b[p[i],0]
-		for j in range (i):
-			sum = sum - (l[j,i] * y[j,0])
-		y[i,0] = sum
-	# backward
-	x = vector(n)
-	for i in range(n-1,-1,-1):
-		sum = y[i,0]
-		for j in range (i+1,n):
-			sum = sum - (u[j,i] * x[j,0])
-		x[i,0] = sum / u[i,i]
-	return x
+        m1 = Matrix.makeId(10)
+        m2 = Matrix.makeRandom(4, 10)
+        m3 = m2*m1
+        self.assertTrue(m3 == m2)
 
-def test_lup_solve():
-	a = matrix([[1,2,0],[3,5,4],[5,6,3]])
-	l = matrix([[1,0,0],[0.6,1,0],[.2,0.571,1]])
-	u = matrix([[5,6,3],[0,1.4,2.2],[0,0,-1.856]])
-	p = [2,1,0]
-	b = vector([0.1, 12.5, 10.3])
-	# p*a == l*u
-	print lup_solve (l,u,p,b)
-	
-# Gaussian elimintation, without pivoting.
-def lu_decomposition (a, use_rational=1):
-	a = a.copy()
-	n = a.size()[0]
-	u = identity (n)
-	l = identity (n)
-	for k in range(n):
-		u[k,k] = a[k,k]
-		for i in range (k+1,n):
-			if use_rational:
-				l[k,i] = Rat.Rat (a[k,i],u[k,k])
-			else:
-				l[k,i] = float(a[k,i]) / u[k,k]
-			u[i,k] = a[i,k]
-		for i in range (k+1,n):
-			for j in range (k+1,n):
-				a[j,i] = a[j,i] - (l[k,i] * u[j,k])
-	return l,u,range(n)
-
-# With pivoting.  [this is supposed to be more numerically stable,
-# won't matter so much if you're using rationals]
-
-def lup_decomposition (a, use_rational=1):
-	a = a.copy()
-	n = a.size()[0]
-	# identity permutation
-	p = range(n)
-	for k in range(n-1):
-		q = 0
-		for i in range (k,n):
-			aa = abs(a[k,i])
-			if aa > q:
-				q = aa
-				k2 = i
-		if not q:
-			raise ValueError, "singular matrix"
-		# swap rows
-		p[k], p[k2] = p[k2], p[k]
-		for i in range (n):
-			a[i,k], a[i,k2] = a[i,k2], a[i,k]
-		# divide by pivot
-		for i in range (k+1,n):
-			# use rats?
-			if use_rational:
-				a[k,i] = Rat.Rat(a[k,i],a[k,k])
-			else:
-				a[k,i] = float(a[k,i]) / a[k,k]
-			for j in range (k+1,n):
-				a[j,i] = a[j,i] - (a[k,i] * a[j,k])
-	# create l and u from a
-	l = identity (n)
-	u = matrix ((n,n))
-	for i in range(n):
-		for j in range(n):
-			if j > i:
-				l[i,j] = a[i,j]				
-			else:
-				u[i,j] = a[i,j]
-	return l,u,p
-
-# example on pp. 753
-# a = matrix([[1,2,0],[3,5,4],[5,6,3]])
-
-# example on pp. 760
-#a = matrix([[2,0,2,.6],[3,3,4,-2],[5,5,4,2],[-1,-2,3.4,-1]])
-
-
-def solve (a,b,pivot=1):
-	"return x such that Ax = b"
-	if pivot:
-		l,u,p = lup_decomposition (a)
-	else:
-		l,u,p = lu_decomposition (a)
-	return lup_solve (l,u,p,b)
-
-def lup_inverse (l,u,p):
-	n = l.size()[0]
-	new = matrix ((n,n))
-	for j in range(n):
-		# solve for each row, one at a time
-		v = vector(n)
-		v[j,0] = 1
-		r = lup_solve (l,u,p,v)
-		for i in range(n):
-			new[j,i] = r[i,0]
-	return new
-		
-def inverse (a):
-	# for some reason this doesn't seem
-	# to work right if I use lup_decomposition
-	l,u,p = lu_decomposition(a)
-	return lup_inverse (l,u,p)
-
+if __name__ == "__main__":
+    unittest.main()
