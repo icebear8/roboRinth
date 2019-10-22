@@ -7,8 +7,9 @@ import time
 
 from MqttClient import MqttClient
 
-from RoboDriver import *
+from Control import *
 from MapMatcher import *
+from RoboDriver import *
 
 logger = logging.getLogger(__name__)
 

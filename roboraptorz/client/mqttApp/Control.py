@@ -9,7 +9,7 @@ from RoboDriver import *
 logger = logging.getLogger(__name__)
 
 class Control:
-  def __init__(self, roboName='roboraptorz', mapMatcher, roboDriver):
+  def __init__(self, roboName, mapMatcher, roboDriver):
     self.roboName=roboName
 
     self._roboDriver=roboDriver
