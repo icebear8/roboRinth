@@ -6,15 +6,10 @@ from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_0
 from hbmqtt.session import ApplicationMessage
 
+from mqttclient import TOPIC_REQUEST_DRIVE_DIRECTIONS, TOPIC_REQUEST_DISCOVER_DIRECTIONS, MQTT_BROKER_URI, \
+    TOPIC_NOTIFY_AVAILABLE_DIRECTIONS, TOPIC_NOTIFY_CROSSING_REACHED
 from position import Position
 from direction import Direction
-
-MQTT_BROKER_URI = 'mqtt://localhost'
-
-TOPIC_REQUEST_DISCOVER_DIRECTIONS = 'robo-sim/request/discoverDirections'
-TOPIC_REQUEST_DRIVE_DIRECTIONS = 'robo-sim/request/driveDirections'
-TOPIC_NOTIFY_AVAILABLE_DIRECTIONS = 'robo-sim/notification/availableDirections'
-TOPIC_NOTIFY_CROSSING_REACHED = 'robo-sim/notification/crossingReached'
 
 
 class RoboSimulator:
