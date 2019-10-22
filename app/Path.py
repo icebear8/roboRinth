@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Set
-from app.map import Direction, Position, Node
+from map import Direction, Position, Node
 
 
 class Action(Enum):
@@ -17,6 +17,9 @@ class PathDiscovery:
         self.__currentNode = refmap.get_node(Position(0, 0))
         self.__currentDirection = Direction.NORTH
         self.__pathList = []
+
+    def get_current_position(self):
+        return self.__currentNode.position
 
     def handle_crossing_reached(self) -> Action:
         if self.__currentNode.visited:
