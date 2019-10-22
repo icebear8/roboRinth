@@ -26,17 +26,17 @@ class followLine:
 
     def updateColor(self, msg):
         if (self.currentState == FollowLineState.driving):
-#            if (msg.startswith("B")):
-#                logger.debug("got Black while driving")
+            if (msg.startswith("B")):
+                logger.debug("got Black while driving")
             if (msg.startswith("W")):
-#                logger.info("reach crossing")
+                logger.info("reach crossing")
                 self.motorSpeed(FollowLineMotorSpeed.slow)
         if (self.currentState == FollowLineState.reachCrossing):
-#            if (msg.startswith("W")):
-#                logger.debug("got Whilte while in crossing")
+            if (msg.startswith("W")):
+                logger.debug("got Whilte while in crossing")
             if (msg.startswith("B")):
                 self.motorSpeed(FollowLineMotorSpeed.stop)
- #               logger.debug("got Black while in crossing, stop")
+                logger.debug("got Black while in crossing, stop")
 
     def handleStartDriving(self, msg):
         self.motorSpeed(FollowLineMotorSpeed.fast)
