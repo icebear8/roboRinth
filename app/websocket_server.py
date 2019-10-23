@@ -49,3 +49,4 @@ class WebSocketServer:
             pass
         finally:
             self.__message_queues.remove(queue)
+

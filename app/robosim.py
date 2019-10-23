@@ -97,8 +97,3 @@ class RoboSimulator:
                     if char == 's':
                         self.position = Position(int(col / 2), int(row / 2))
 
-
-if __name__ == '__main__':
-    client = RoboSimulator(sleep_time=0.25)
-    asyncio.get_event_loop().create_task(client.run())
-    asyncio.get_event_loop().run_forever()
