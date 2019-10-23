@@ -5,6 +5,7 @@ import logging
 import sys
 import time
 
+
 from MqttClient import MqttClient
 
 from Control import *
@@ -33,8 +34,6 @@ def main(argv):
 
   args = parser.parse_args()
 
-  server = WebSocketServer()
-
   _initializeLogging(args.log)
   logger.debug("Main started")
 
@@ -53,7 +52,6 @@ def main(argv):
 
   mapMatcher=MapMatcher()
   mapMatcher.registerRobotDriver(roboName, roboDriver)
-  mapMatcher.setServer(server)
 
   robots={}
   robots[roboName]=Control(roboName, mapMatcher, roboDriver)

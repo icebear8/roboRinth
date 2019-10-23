@@ -31,7 +31,8 @@ class MapMatcher:
         if self.onMapUpdate:
             self.onMapUpdate(mapName)
         if self.server:
-            self.server.send_update(roboMap)
+            currentPos = roboMap.getRobotLocation()
+            self.server.send_update(roboMap, currentPos)
 
     def mapDirectionAndColorToVectorAndColor(self, dirColTup):
         direction, color = dirColTup
