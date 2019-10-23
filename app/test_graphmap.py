@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from graphmap import GraphMap, Edge
+from color import Color
+from graphmap import GraphMap
 from position import Position
 from direction import Direction
 
@@ -10,39 +11,39 @@ class TestGraphMap(TestCase):
         test_map = GraphMap()
         self.__discover_test_map(test_map)
 
-        def has_edge(position1: Position, position2: Position):
-            edge = Edge(test_map._get_and_create_node(position1), test_map._get_and_create_node(position2))
-            return edge in test_map.get_all_edges()
+        def has_edge(position1: Position, direction: Direction):
+            return test_map.get_edge(position1, direction) is not None
 
         # check edges
         assert (len(test_map.get_all_edges()) == 7)
-        assert (has_edge(Position(1, 3), Position(1, 2)))
+        assert (has_edge(Position(1, 3), Direction.NORTH))
 
-        assert (has_edge(Position(1, 2), Position(1, 3)))
-        assert (has_edge(Position(1, 2), Position(2, 2)))
-        assert (has_edge(Position(1, 2), Position(1, 1)))
+        assert (has_edge(Position(1, 2), Direction.SOUTH))
+        assert (has_edge(Position(1, 2), Direction.EAST))
+        assert (has_edge(Position(1, 2), Direction.NORTH))
 
-        assert (has_edge(Position(2, 2), Position(2, 1)))
-        assert (has_edge(Position(2, 2), Position(1, 2)))
+        assert (has_edge(Position(2, 2), Direction.NORTH))
+        assert (has_edge(Position(2, 2), Direction.WEST))
 
-        assert (has_edge(Position(2, 1), Position(2, 2)))
-        assert (has_edge(Position(2, 1), Position(1, 1)))
+        assert (has_edge(Position(2, 1), Direction.SOUTH))
+        assert (has_edge(Position(2, 1), Direction.WEST))
 
-        assert (has_edge(Position(1, 1), Position(0, 1)))
-        assert (has_edge(Position(1, 1), Position(2, 1)))
-        assert (has_edge(Position(1, 1), Position(1, 0)))
-        assert (has_edge(Position(1, 1), Position(1, 2)))
+        assert (has_edge(Position(1, 1), Direction.NORTH))
+        assert (has_edge(Position(1, 1), Direction.SOUTH))
+        assert (has_edge(Position(1, 1), Direction.EAST))
+        assert (has_edge(Position(1, 1), Direction.WEST))
 
-        assert (has_edge(Position(0, 1), Position(1, 1)))
+        assert (has_edge(Position(0, 1), Direction.EAST))
 
-        assert (has_edge(Position(1, 0), Position(1, 1)))
+        assert (has_edge(Position(1, 0), Direction.SOUTH))
 
     def test_visited_nodes(self):
         test_map = GraphMap()
         self.__discover_test_map(test_map)
 
         def is_visited(position: Position):
-            return test_map._get_and_create_node(position).visited
+            node = test_map.get_node(position)
+            return bool(node and node.visited)
 
         assert (is_visited(Position(0, 0)) is False)
         assert (is_visited(Position(1, 0)) is False)
@@ -131,8 +132,8 @@ class TestGraphMap(TestCase):
         #       |
         #   *   *   *   *  3
 
-        map.node_discovered(Position(1, 3), {Direction.NORTH})
-        map.node_discovered(Position(1, 2), {Direction.NORTH, Direction.EAST})
-        map.node_discovered(Position(2, 2), {Direction.NORTH, Direction.WEST})
-        map.node_discovered(Position(2, 1), {Direction.SOUTH, Direction.WEST})
-        map.node_discovered(Position(1, 1), {Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST})
+        map.node_discovered(Position(1, 3), [(Direction.NORTH, Color.BLACK)])
+        map.node_discovered(Position(1, 2), [(Direction.NORTH, Color.BLACK), (Direction.EAST, Color.BLACK)])
+        map.node_discovered(Position(2, 2), [(Direction.NORTH, Color.BLACK), (Direction.WEST, Color.BLACK)])
+        map.node_discovered(Position(2, 1), [(Direction.SOUTH, Color.BLACK), (Direction.WEST, Color.BLACK)])
+        map.node_discovered(Position(1, 1), [(Direction.NORTH, Color.BLACK), (Direction.SOUTH, Color.BLACK), (Direction.WEST, Color.BLACK), (Direction.EAST, Color.BLACK)])

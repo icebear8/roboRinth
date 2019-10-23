@@ -1,16 +1,14 @@
-from typing import Set, List, Tuple
+from typing import Set, List, Tuple, Union
 
 from direction import Direction
 from position import Position
 from color import Color
 
+
 class Node:
     def __init__(self, position: Position):
         self.position = position
         self.visited = False
-
-    def __repr__(self):
-        return str(self.__class__) + ": " + str(self.position)
 
 
 class Edge:
@@ -19,69 +17,77 @@ class Edge:
         self.node2 = node2
         self.color = color
 
-    def __hash__(self):
-        #color ignored by purpose
-        return hash(self.node1) | hash(self.node2)
-
-    def __eq__(self, other):
-        #color ignored purpose
-        return {self.node1, self.node2} == {other.node1, other.node2}
-
 
 class GraphMap:
     def __init__(self):
-        self.nodes = dict()
-        self.edges = set()
+        self.nodes = []
+        self.edges = []
 
     def node_discovered(self, position: Position, available_directions: List[Tuple[Direction, Color]]):
-        node = self._get_and_create_node(position)
+        node = self.__get_or_create_node(position)
         node.visited = True
 
         for direction in available_directions:
-            self.edges.add(self.__create_edge(position, direction))
-            if direction[0] == Color.RED:
-                print('We found the treasure!!')
-
-    def get_edge_color(self, position, direction):
-        for e in self.edges:
-            if (e == self.__create_edge(position, direction)):
-                return e.color
-        return None
+            self.__get_or_create_edge(position, direction[0], direction[1])
 
     def get_available_directions(self, position: Position) -> Set[Direction]:
         result = set()
         for direction in Direction:
-            if self.__create_edge(position, (direction, Color.BLACK)) in self.edges:
+            edge = self.get_edge(position, direction)
+            if edge:
                 result.add(direction)
         return result
 
     def get_unvisited_directions(self, position: Position) -> Set[Direction]:
         result = set()
         for direction in Direction:
-            if self._get_and_create_node(position.new_pos_in_direction(direction, 1)).visited:
+            node = self.get_node(position.new_pos_in_direction(direction))
+            if node and node.visited:
                 continue
-            if self.__create_edge(position, (direction, Color.BLACK)) in self.edges:
+            edge = self.get_edge(position, direction)
+            if edge:
                 result.add(direction)
         return result
 
-    def _get_and_create_node(self, position: Position) -> Node:
-        if position not in self.nodes:
-            self.nodes[position] = Node(position)
-        return self.nodes[position]
+    def get_node(self, position: Position) -> Union[Node, None]:
+        for node in self.nodes:
+            if node.position == position:
+                return node
 
-    def get_node(self, position: Position) -> Node:
-        if position not in self.nodes:
-            return None
-        return self.nodes[position]
+        return None
 
-    def get_all_edges(self) -> Set[Edge]:
+    def get_edge(self, position: Position, direction: Direction) -> Union[Edge, None]:
+        pos1 = position
+        pos2 = position.new_pos_in_direction(direction)
+
+        for edge in self.edges:
+            if edge.node1.position == pos1 and edge.node2.position == pos2 or \
+                    edge.node1.position == pos2 and edge.node2.position == pos1:
+                return edge
+
+        return None
+
+    def get_all_edges(self) -> List[Edge]:
         return self.edges
 
     def get_number_of_unvisited_nodes(self):
-        return sum([not node.visited for node in self.nodes.values()])
+        return sum([not node.visited for node in self.nodes])
 
+    def __get_or_create_node(self, position: Position) -> Node:
+        node = self.get_node(position)
+        if not node:
+            node = Node(position)
+            self.nodes.append(node)
+        return node
 
-    def __create_edge(self, position: Position, direction: Tuple[Direction, Color]):
-        node1 = self._get_and_create_node(position)
-        node2 = self._get_and_create_node(position.new_pos_in_direction(direction[0], 1))
-        return Edge(node1, node2, direction[1])
+    def __get_or_create_edge(self, position: Position, direction: Direction, color: Color) -> Edge:
+        edge = self.get_edge(position, direction)
+
+        if not edge:
+            node1 = self.__get_or_create_node(position)
+            node2 = self.__get_or_create_node(position.new_pos_in_direction(direction))
+            edge = Edge(node1, node2, color)
+            self.edges.append(edge)
+
+        return edge
+
