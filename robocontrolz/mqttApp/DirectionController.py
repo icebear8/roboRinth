@@ -30,9 +30,9 @@ class TurnEvents(Enum):
     ANGLE_REACHED = 2
 
 class DirectionController:
-    SEARCH_SPEED = 15
+    SEARCH_SPEED = 10
     TURN_SPEED = 15
-    TIMEOUT_CONST = 75
+    TIMEOUT_CONST = 100 #75
     COLORS_MAP = {
         'Black': 'B',
         'Yellow': 'Y',
@@ -93,7 +93,6 @@ class DirectionController:
         jdata = json.loads(msg)
         print('turn ' + str(jdata[0]))
         if self._directionState == DirectionState.IDLE:
-            self.zeroAngle()
             if type(jdata[0]) == int:
                 self.processEvent(DirectionEvents.START_TURN, jdata[0])
             else:
@@ -101,14 +100,8 @@ class DirectionController:
         else:
             print('error: robot busy, turn not allowed')
 
-    def posReached(self):
-        self.processEvent(DirectionEvents.POS_REACHED, 0)
-
     def updateAngle(self, client, userdata, msg):
         self._rawAngle = int(msg.payload.decode("utf-8"))
-        if self._turnState == TurnState.TURN_ANGLE and self.isAngleReached():
-            #print(self.correctedAngle())
-            self.processTurnEvent(TurnEvents.ANGLE_REACHED)
 
     def updateColor(self, msg):
         if msg != self._lastColor:
@@ -168,7 +161,7 @@ class DirectionController:
             if self._directionState != oldDirectionState:
                 # entry action
                 print('DISCOVERY, entry action')
-                self.processTurnEvent(TurnEvents.NEW_ANGLE, 360)
+                self.processTurnEvent(TurnEvents.NEW_ANGLE, 380)
             else:
                 # recurring action
                 print('DISCOVERY, recurring action')
@@ -241,17 +234,8 @@ class DirectionController:
         angle = abs(desiredangle) * 186/90
         return steering, angle
 
-    def correctedAngle(self):
-        return self._rawAngle - self._angleOffset
-
     def roundedAngle(self):
         return round((self._rawAngle - self._angleOffset) / 90) * 90
-
-    def isAngleReached(self):
-        if self._destinationAngle < 0:
-            return self.correctedAngle() <= self._destinationAngle
-        else:
-            return self.correctedAngle() >= self._destinationAngle
 
     def dirMapToList(self, dirMap):
         dirList = list()

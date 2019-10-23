@@ -80,8 +80,6 @@ def main(argv):
       elif tokens[0] == "turn" and len(tokens) >= 2:
         print(tokens[1])
         client._client.publish(_roboName + "/request/driveDirectionsRaw","[\""+str(tokens[1])+"\"]")
-      elif tokens[0] == "reached":
-        dirCtrl.posReached()
       elif tokens[0] == 'color' and len(tokens) >= 2:
         client._client.publish(_roboName + "/notification/color/name", tokens[1])
       elif tokens[0] == 'angle' and len(tokens) >= 2:

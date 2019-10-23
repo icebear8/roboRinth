@@ -63,10 +63,10 @@ class MqttClient:
 
   def startAsync(self):
     self._client.connect(self._host, self._port, self._keepalive)
-    self._client.loop_start();
+    self._client.loop_start()
 
   def stop(self):
-    self._client.loop_stop();
+    self._client.loop_stop()
     self._client.disconnect()
 
   def _subscribeTopics(self, topics):
@@ -78,7 +78,7 @@ class MqttClient:
       self._client.message_callback_add(handler, handlers[handler])
 
   def _setupNotifications(self):
-    #client.publish(_roboName+"/subscribe/gyro/angle")
+    self._client.publish(_roboName+"/subscribe/gyro/angle")
     self._client.publish(_roboName+"/subscribe/color/name")
     self._client.publish(_roboName+"/request/notper", str(100))
 
