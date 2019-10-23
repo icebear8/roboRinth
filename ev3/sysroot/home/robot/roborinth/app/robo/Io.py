@@ -351,7 +351,7 @@ class Io(threading.Thread):
 
 	def turnMoveSteeringByAngle(self, speed, steering, angle):
 		try:
-			self.moveSteering.on_for_degrees(steering, speed, angle, block=False)
+			self.moveSteering.on_for_degrees(steering, speed, angle, brake=False, block=False)
 			return True
 		except(AttributeError, DeviceNotFound) as e:
 			print(str(e))
