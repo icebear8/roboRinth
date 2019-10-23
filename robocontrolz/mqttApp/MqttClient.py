@@ -35,7 +35,6 @@ mqttSubscriptionHandlers = {
   _roboName+"/request/driveDirectionsRaw":    handler.handleStartDriving,
   _roboName+"/notification/gyro/angle": handler.handleGyro,
   _roboName+"/request/init":    handler.handleInit
-  #_roboName+"/request/motor/position":    handler.handleMotorPosition,
 }
 
 class MqttClient:
