@@ -209,16 +209,16 @@ class Io(threading.Thread):
 		color = "UnknownColor"
 		if red is 0 and green is 0 and blue is 0:
 			color = "NoColor"
-		elif red <= 40 and green <= 40 and blue <= 40:
+		elif red <= 60 and green <= 60 and blue <= 60:
 			color = "Black"
-		elif red >= 100 and green <= 40 and blue <= 40:
+		elif red >= 75 and green <= 40 and blue <= 40:
 			color = "Red"
 		elif red >= 150 and green > blue and blue <= 50:
 			color = "Yellow"
-		elif red >= 90 and blue > green and blue >= 100:
+		elif red >= 150 and blue > green and blue >= 200:
 			color = "White"
-		else:
-			color = "White"
+		#else:
+		#	color = "White"
 		print('color is %s, rgb = %i, %i, %i' % (color, red, green, blue))
 		return color
 
