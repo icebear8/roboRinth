@@ -1,29 +1,9 @@
 from enum import Enum
 
 import json
+import threading
+import time
 
-SPEED = 5
-
-colors = {
-    'Black' : 'B',
-    'Yellow' : 'Y',
-    'Red' : 'R',
-}
-
-directionToAngle = {
-    'L' : -90,
-    'F' : 0,
-    'R' : 90,
-    'B' : 180,
-}
-
-angleToDirection = {
-    0 : 'F',
-    90 : 'R',
-    180 : 'B',
-    270 : 'L',
-    360 : 'F',
-}
 
 class DirectionState(Enum):
     IDLE = 1
@@ -50,6 +30,30 @@ class TurnEvents(Enum):
     ANGLE_REACHED = 2
 
 class DirectionController:
+    SEARCH_SPEED = 15
+    TURN_SPEED = 15
+    TIMEOUT_CONST = 75
+    COLORS_MAP = {
+        'Black': 'B',
+        'Yellow': 'Y',
+        'Red': 'R',
+    }
+    DIRECTION_TO_ANGLE_MAP = {
+        'L': -90,
+        'F': 0,
+        'R': 90,
+        'B': 180,
+    }
+    ANGLE_TO_DIRECTION_MAP = {
+        0: 'F',
+        90: 'R',
+        180: 'B',
+        270: 'L',
+        360: 'F',
+    }
+
+    __searchTimer = None
+
     def __init__(self, followLine):
         self._followLine = followLine
         self._rawAngle = 0
@@ -83,11 +87,6 @@ class DirectionController:
         else:
             print('error: robot busy, discover not allowed')
 
-    def convertAngle(self, desiredangle):
-        steering = 100 if desiredangle > 0 else -100
-        angle = desiredangle * 2
-        return steering, angle
-
     def turn(self, msg):
         if msg is None:
             return
@@ -98,7 +97,7 @@ class DirectionController:
             if type(jdata[0]) == int:
                 self.processEvent(DirectionEvents.START_TURN, jdata[0])
             else:
-                self.processEvent(DirectionEvents.START_TURN, directionToAngle.get(jdata[0], 0))
+                self.processEvent(DirectionEvents.START_TURN, self.DIRECTION_TO_ANGLE_MAP.get(jdata[0], 0))
         else:
             print('error: robot busy, turn not allowed')
 
@@ -173,8 +172,8 @@ class DirectionController:
             else:
                 # recurring action
                 print('DISCOVERY, recurring action')
-                print('add color to list: ' + angleToDirection[self.roundedAngle()] + ', ' + colors[data])
-                self._directionColorMap[angleToDirection[self.roundedAngle()]] = colors[data]
+                print('add color to list: ' + self.ANGLE_TO_DIRECTION_MAP[self.roundedAngle()] + ', ' + self.COLORS_MAP[data])
+                self._directionColorMap[self.ANGLE_TO_DIRECTION_MAP[self.roundedAngle()]] = self.COLORS_MAP[data]
 
         elif self._directionState == DirectionState.DISCOVERY_FINISHED:
             if self._directionState != oldDirectionState:
@@ -209,30 +208,38 @@ class DirectionController:
     def processTurnEvent(self, event, data=None):
         if self._turnState == TurnState.IDLE:
             if event == TurnEvents.NEW_ANGLE:
+                print('start turn robot')
                 self._destinationAngle = data
+                steering, angle = self.convertAngle(data)
                 parameters = dict()
-                parameters['speed'] = SPEED
-                if data < 0:
-                    print('turn robot to the left')
-                    parameters['steering'] = -100
-                    self._mqtt.publish(self._roboName + '/request/steering/activate', json.dumps(parameters))
-                if data > 0:
-                    print('turn robot to the right')
-                    parameters['steering'] = 100
-                    self._mqtt.publish(self._roboName + '/request/steering/activate', json.dumps(parameters))
+                parameters['speed'] = self.SEARCH_SPEED
+                parameters['steering'] = steering
+                parameters['angle'] = angle
+                self._mqtt.publish(self._roboName + '/request/steering/turn', json.dumps(parameters))
+                self.startTimer(self.TIMEOUT_CONST/self.SEARCH_SPEED/360*abs(data))
                 self._turnState = TurnState.TURN_ANGLE
         elif self._turnState == TurnState.TURN_ANGLE:
             if event == TurnEvents.ANGLE_REACHED:
                 print('stop turn robot')
-                parameters = dict()
-                parameters['speed'] = 0
-                parameters['steering'] = 0
-                self._mqtt.publish(self._roboName + '/request/steering/activate', json.dumps(parameters))
                 self._turnState = TurnState.IDLE
                 self.processEvent(DirectionEvents.POS_REACHED)
 
+    def startTimer(self, time):
+        if (self.__searchTimer):
+            self.__searchTimer.cancel()
+        self.__searchTimer = threading.Timer(time, self.onStopTimer)
+        self.__searchTimer.start()
+
+    def onStopTimer(self):
+        self.processTurnEvent(TurnEvents.ANGLE_REACHED)
+
     def zeroAngle(self):
         self._angleOffset = self._rawAngle
+
+    def convertAngle(self, desiredangle):
+        steering = 100 if desiredangle > 0 else -100
+        angle = abs(desiredangle) * 186/90
+        return steering, angle
 
     def correctedAngle(self):
         return self._rawAngle - self._angleOffset
