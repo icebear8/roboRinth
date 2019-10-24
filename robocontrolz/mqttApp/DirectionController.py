@@ -231,7 +231,7 @@ class DirectionController:
 
     def convertAngle(self, desiredangle):
         steering = 100 if desiredangle > 0 else -100
-        angle = abs(desiredangle) * 186/90
+        angle = abs(desiredangle) * 195/90
         return steering, angle
 
     def roundedAngle(self):
