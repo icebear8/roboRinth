@@ -106,7 +106,7 @@ class DirectionController:
     def updateColor(self, msg):
         if msg != self._lastColor:
             self._lastColor = msg
-            if msg != "White":
+            if msg in self.COLORS_MAP:
                 self.processEvent(DirectionEvents.NEW_COLOR, msg)
 
     def processEvent(self, event, data=None):
