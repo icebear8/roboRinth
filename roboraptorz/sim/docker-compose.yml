@@ -1,0 +1,10 @@
+version: '3'
+services:
+  roborinthsim:
+    build: .
+    image: icebear8/roborinthsim:build
+    container_name: roborinthsim
+    volumes:
+      - ./simulator:/mnt/app
+    env_file:
+      - ./config/default.env

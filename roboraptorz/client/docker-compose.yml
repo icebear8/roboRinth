@@ -1,0 +1,10 @@
+version: '3'
+services:
+  roboraptorz:
+    build: .
+    image: icebear8/roboraptorz:build
+    container_name: roboraptorz
+    volumes:
+      - ./mqttApp:/mnt/app
+    env_file:
+      - ./config/default.env
