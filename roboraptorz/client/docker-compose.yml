@@ -8,5 +8,3 @@ services:
       - ./mqttApp:/mnt/app
     env_file:
       - ./config/default.env
-    ports:
-    - "8080:1234"
